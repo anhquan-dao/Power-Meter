@@ -1,0 +1,158 @@
+Circuit: * C:\users\quan\My Documents\VGU\Power Meter\ltspice\example_PMOS_high_switch_test_logic.asc
+
+Warning: Multiple definitions of model "2scr375p" Type: BJT
+Warning: Multiple definitions of model "bc857b" Type: BJT
+Warning: Multiple definitions of model "bc847c" Type: BJT
+Warning: Multiple definitions of model "bc847b" Type: BJT
+WARNING: Specified period is not longer than the sum of Trise, Tfall, and Ton for v2.  Increasing period to 0.010002
+WARNING: Node NC_01 is floating.
+WARNING: Node NC_02 is floating.
+WARNING: Node NC_03 is floating.
+
+WARNING: Less than two connections to node NC_01.  This node is used by C1.
+WARNING: Less than two connections to node NC_02.  This node is used by C2.
+WARNING: Less than two connections to node NC_03.  This node is used by C3.
+WARNING: Less than two connections to node NC_08.  This node is used by S:U6:OUT4:W1.
+WARNING: Less than two connections to node NC_09.  This node is used by S:U6:OUT5:W1.
+WARNING: Less than two connections to node NC_10.  This node is used by S:U6:OUT6:W1.
+WARNING: Less than two connections to node NC_11.  This node is used by S:U6:OUT7:W1.
+Direct Newton iteration failed to find .op point.  (Use ".option noopiter" to skip.)
+Starting Gmin stepping
+Gmin = 10
+Gmin = 1.07374
+Gmin = 0.115292
+Gmin = 0.0123794
+Gmin = 0.00132923
+Gmin = 0.000142725
+Gmin = 1.5325e-005
+Gmin = 1.6455e-006
+Gmin = 1.76685e-007
+Gmin = 1.89714e-008
+Gmin = 2.03704e-009
+Gmin = 2.18725e-010
+Gmin = 2.34854e-011
+Gmin = 2.52173e-012
+Gmin = 2.70769e-013
+Gmin = 0
+Gmin stepping succeeded in finding the operating point.
+
+Ignoring empty pin current: Ix(u1:n009)
+Ignoring empty pin current: Ix(u1:nreset)
+Ignoring empty pin current: Ix(u1:n002)
+Ignoring empty pin current: Ix(u1:n005)
+Ignoring empty pin current: Ix(u1:n008)
+Ignoring empty pin current: Ix(u2:n009)
+Ignoring empty pin current: Ix(u2:nreset)
+Ignoring empty pin current: Ix(u2:n002)
+Ignoring empty pin current: Ix(u2:n005)
+Ignoring empty pin current: Ix(u2:n008)
+Ignoring empty pin current: Ix(u3:in)
+Ignoring empty pin current: Ix(u3:out)
+Ignoring empty pin current: Ix(u3:vcc)
+Ignoring empty pin current: Ix(u3:gnd)
+Ignoring empty pin current: Ix(u3:nout)
+Ignoring empty pin current: Ix(u4:in)
+Ignoring empty pin current: Ix(u4:out)
+Ignoring empty pin current: Ix(u4:vcc)
+Ignoring empty pin current: Ix(u4:gnd)
+Ignoring empty pin current: Ix(u4:nout)
+Ignoring empty pin current: Ix(u6:in)
+Ignoring empty pin current: Ix(u6:out)
+Ignoring empty pin current: Ix(u6:vcc)
+Ignoring empty pin current: Ix(u6:gnd)
+Ignoring empty pin current: Ix(u6:nout)
+Ignoring empty pin current: Ix(u7:in)
+Ignoring empty pin current: Ix(u7:out)
+Ignoring empty pin current: Ix(u7:vcc)
+Ignoring empty pin current: Ix(u7:gnd)
+Ignoring empty pin current: Ix(u7:nout)
+Ignoring empty pin current: Ix(u8:in)
+Ignoring empty pin current: Ix(u8:out)
+Ignoring empty pin current: Ix(u8:vcc)
+Ignoring empty pin current: Ix(u8:gnd)
+Ignoring empty pin current: Ix(u8:nout)
+Ignoring empty pin current: Ix(u9:in)
+Ignoring empty pin current: Ix(u9:out)
+Ignoring empty pin current: Ix(u9:vcc)
+Ignoring empty pin current: Ix(u9:gnd)
+Ignoring empty pin current: Ix(u9:nout)
+Ignoring empty pin current: Ix(u10:in)
+Ignoring empty pin current: Ix(u10:out)
+Ignoring empty pin current: Ix(u10:vcc)
+Ignoring empty pin current: Ix(u10:gnd)
+Ignoring empty pin current: Ix(u11:in)
+Ignoring empty pin current: Ix(u11:out)
+Ignoring empty pin current: Ix(u11:vcc)
+Ignoring empty pin current: Ix(u11:gnd)
+Ignoring empty pin current: Ix(u1:n009)
+Ignoring empty pin current: Ix(u1:nreset)
+Ignoring empty pin current: Ix(u1:n002)
+Ignoring empty pin current: Ix(u1:n005)
+Ignoring empty pin current: Ix(u1:n008)
+Ignoring empty pin current: Ix(u2:n009)
+Ignoring empty pin current: Ix(u2:nreset)
+Ignoring empty pin current: Ix(u2:n002)
+Ignoring empty pin current: Ix(u2:n005)
+Ignoring empty pin current: Ix(u2:n008)
+Ignoring empty pin current: Ix(u3:in)
+Ignoring empty pin current: Ix(u3:out)
+Ignoring empty pin current: Ix(u3:vcc)
+Ignoring empty pin current: Ix(u3:gnd)
+Ignoring empty pin current: Ix(u3:nout)
+Ignoring empty pin current: Ix(u4:in)
+Ignoring empty pin current: Ix(u4:out)
+Ignoring empty pin current: Ix(u4:vcc)
+Ignoring empty pin current: Ix(u4:gnd)
+Ignoring empty pin current: Ix(u4:nout)
+Ignoring empty pin current: Ix(u6:in)
+Ignoring empty pin current: Ix(u6:out)
+Ignoring empty pin current: Ix(u6:vcc)
+Ignoring empty pin current: Ix(u6:gnd)
+Ignoring empty pin current: Ix(u6:nout)
+Ignoring empty pin current: Ix(u7:in)
+Ignoring empty pin current: Ix(u7:out)
+Ignoring empty pin current: Ix(u7:vcc)
+Ignoring empty pin current: Ix(u7:gnd)
+Ignoring empty pin current: Ix(u7:nout)
+Ignoring empty pin current: Ix(u8:in)
+Ignoring empty pin current: Ix(u8:out)
+Ignoring empty pin current: Ix(u8:vcc)
+Ignoring empty pin current: Ix(u8:gnd)
+Ignoring empty pin current: Ix(u8:nout)
+Ignoring empty pin current: Ix(u9:in)
+Ignoring empty pin current: Ix(u9:out)
+Ignoring empty pin current: Ix(u9:vcc)
+Ignoring empty pin current: Ix(u9:gnd)
+Ignoring empty pin current: Ix(u9:nout)
+Ignoring empty pin current: Ix(u10:in)
+Ignoring empty pin current: Ix(u10:out)
+Ignoring empty pin current: Ix(u10:vcc)
+Ignoring empty pin current: Ix(u10:gnd)
+Ignoring empty pin current: Ix(u11:in)
+Ignoring empty pin current: Ix(u11:out)
+Ignoring empty pin current: Ix(u11:vcc)
+Ignoring empty pin current: Ix(u11:gnd)
+Heightened Def Con from 1.12148e-005 ++to 1.12148e-005
+Heightened Def Con from 1.12148e-005 to 1.12152e-005
+Heightened Def Con from 1.16393e-005 ++++++++to 1.16393e-005
+Heightened Def Con from 1.16393e-005 ++to 1.16394e-005
+Heightened Def Con from 1.16394e-005 to 1.16397e-005
+
+Date: Sun Apr 02 21:43:28 2023
+Total elapsed time: 0.933 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 12541
+traniter = 12062
+tranpoints = 2986
+accept = 2371
+rejected = 632
+matrix size = 279
+fillins = 88
+solver = Normal
+Thread vector: 24.0/15.0[5] 15.8/11.4[5] 9.4/5.9[5] 1.7/2.5[1]  2592/500
+Matrix Compiler1: 15.19 KB object code size  3.5/2.0/[1.0]
+Matrix Compiler2: 19.57 KB object code size  2.8/4.7/[1.3]
+

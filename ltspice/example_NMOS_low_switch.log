@@ -1,0 +1,25 @@
+Circuit: * C:\users\quan\My Documents\VGU\Power Meter\ltspice\example_NMOS_low_switch.asc
+
+Warning: Multiple definitions of model "2scr375p" Type: BJT
+Warning: Multiple definitions of model "bc857b" Type: BJT
+Warning: Multiple definitions of model "bc847c" Type: BJT
+Warning: Multiple definitions of model "bc847b" Type: BJT
+Direct Newton iteration for .op point succeeded.
+
+Date: Tue Jan 03 20:44:49 2023
+Total elapsed time: 0.621 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 50467
+traniter = 50454
+tranpoints = 25124
+accept = 25107
+rejected = 17
+matrix size = 16
+fillins = 1
+solver = Normal
+Matrix Compiler1: 958 bytes object code size  0.2/0.2/[0.1]
+Matrix Compiler2: off  [0.2]/0.2/0.2
+

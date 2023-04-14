@@ -1,0 +1,159 @@
+{
+    "[latex]": {
+        "editor.wordWrap" : "on",
+        "editor.formatOnPaste": false,
+        "editor.suggestSelection": "recentlyUsedByPrefix"
+    },
+    "latex-workshop.view.pdf.viewer": "tab",
+    "editor.minimap.enabled": false,
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "lulatexmk 🔃",
+            "tools": [
+                "lualatexmk"
+            ]
+        },
+        {
+            "name": "latexmk 🔃",
+            "tools": [
+                "latexmk"
+            ]
+        },
+        {
+            "name": "xelatexmk 🔃",
+            "tools": [
+                "xelatexmk"
+            ]
+        },
+        {
+            "name": "platexmk 🔃",
+            "tools": [
+                "platexmk",
+                "pdfout"
+            ]
+        },
+        {
+            "name": "pdflatex ➞ bibtex ➞ pdflatex*2",
+            "tools": [
+                "pdflatex",
+                "bibtex",
+                "pdflatex",
+                "pdflatex",
+                "pdfout"
+            ]
+        },
+        {
+            "name": "copy",
+            "tools": [
+                "pdfout"
+            ]
+        },
+        {
+            "name": "xelatex ➞ biber ➞ xelatex",
+            "tools": [
+                "xelatex",
+                "biber",
+                "xelatex"
+            ]
+        }
+    ],
+    "latex-workshop.latex.tools": [
+        {
+            "name": "latexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-file-line-error",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "platexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-file-line-error",
+                "-pdf",
+                "-outdir=%OUTDIR%",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "xelatexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-file-line-error",
+                "-xelatex",
+                "-outdir=%OUTDIR%",
+                "-interaction=nonstopmode",
+                "-halt-on-error",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "lualatexmk",
+            "command": "latexmk",
+            "args": [
+                "-synctex=1",
+                "-file-line-error",
+                "-lualatex",
+                "-outdir=%OUTDIR%",
+                "-interaction=nonstopmode",
+                "-halt-on-error",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "pdflatex",
+            "command": "pdflatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-halt-on-error",
+                "-file-line-error",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "xelatex",
+            "command": "xelatex",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-halt-on-error",
+                "-file-line-error",
+                "%DOC%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "bibtex",
+            "command": "bibtex",
+            "args": [
+                "%DOCFILE%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "biber",
+            "command": "biber",
+            "args": [
+                "%DOCFILE%"
+            ],
+            "env": {}
+        },
+        {
+            "name": "pdfout",
+            "command": "cp",
+            "args": ["./build/main.pdf", "./"]
+        }
+    ],
+    "latex-workshop.latex.autoBuild.run": "onSave"
+}

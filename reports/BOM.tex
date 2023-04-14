@@ -1,0 +1,37 @@
+%!TeX root = BOM
+\documentclass[main.tex]{subfiles}
+
+\newcommand{\xbox}{\CheckBox[name=mycheckbox,checkboxsymbol=\ding{53}]{}   }
+
+\begin{document}
+    \chapter{Bill of Materials}
+
+    \begin{Form}
+    \begin{itemize}
+        \item \xbox P-channel MOSFET IRF4905s x3
+        \item \xbox P2N2222A Transistor NPN 40V 0.6A TO-92
+        \item \xbox LM393P IC Dual Comparator, Open Collector, 8-DIP 
+        \item \xbox 74HC373N IC Latch Transparent D-Type, Tri-State 20-DIP
+        \item \xbox 
+    \end{itemize}
+    \end{Form}
+
+    \begin{Form}
+        \begin{table}[!h]
+            \centering
+            \begin{tabular}{|@{}p{5mm}@{}|m{0.7\linewidth}|m{0.1\linewidth}|}
+            
+            \hline
+            & Component & Quantity \\ \hline
+            \xbox & P-channel MOSFET IRF4905s & 4 \\ \hline
+            \xbox & P2N2222A Transistor NPN 40V 0.6A TO-92 & 3 \\ \hline
+            \xbox & LM393P IC Dual Comparator, Open Collector, 8-DIP & 2 \\ \hline
+            \xbox & 74HC373N IC Latch Transparent D-Type, Tri-State 20-DIP & 1 \\ \hline
+            \xbox & SN74LS08N IC Quad 2-Input AND Logic Gate, 14-DIP & 2 \\ \hline
+            \xbox & SN74HC32N IC Quad 2-Input OR Logic Gate, 14-DIP & 2 \\ \hline
+
+            \end{tabular}
+    
+        \end{table}
+    \end{Form}
+\end{document}

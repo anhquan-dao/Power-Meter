@@ -1,0 +1,127 @@
+Circuit: * C:\users\quan\My Documents\VGU\Power Meter\ltspice\example_PMOS_high_switch_ver2.asc
+
+Warning: Multiple definitions of model "2scr375p" Type: BJT
+Warning: Multiple definitions of model "bc857b" Type: BJT
+Warning: Multiple definitions of model "bc847c" Type: BJT
+Warning: Multiple definitions of model "bc847b" Type: BJT
+WARNING: Node NC_01 is floating.
+WARNING: Node NC_02 is floating.
+
+WARNING: Less than two connections to node NC_01.  This node is used by C2.
+WARNING: Less than two connections to node NC_02.  This node is used by C3.
+WARNING: Less than two connections to node NC_11.  This node is used by S:U6:OUT1:W1.
+WARNING: Less than two connections to node NC_12.  This node is used by S:U6:OUT2:W1.
+WARNING: Less than two connections to node NC_13.  This node is used by S:U6:OUT3:W1.
+WARNING: Less than two connections to node NC_14.  This node is used by S:U6:OUT4:W1.
+WARNING: Less than two connections to node NC_15.  This node is used by S:U6:OUT5:W1.
+WARNING: Less than two connections to node NC_16.  This node is used by S:U6:OUT6:W1.
+WARNING: Less than two connections to node NC_17.  This node is used by S:U6:OUT7:W1.
+WARNING: Less than two connections to node N012.  This node is used by A1.
+Direct Newton iteration for .op point succeeded.
+Ignoring empty pin current: Ix(u1:n009)
+Ignoring empty pin current: Ix(u1:nreset)
+Ignoring empty pin current: Ix(u1:n002)
+Ignoring empty pin current: Ix(u1:n005)
+Ignoring empty pin current: Ix(u1:n008)
+Ignoring empty pin current: Ix(u2:n009)
+Ignoring empty pin current: Ix(u2:nreset)
+Ignoring empty pin current: Ix(u2:n002)
+Ignoring empty pin current: Ix(u2:n005)
+Ignoring empty pin current: Ix(u2:n008)
+Ignoring empty pin current: Ix(u3:in)
+Ignoring empty pin current: Ix(u3:out)
+Ignoring empty pin current: Ix(u3:vcc)
+Ignoring empty pin current: Ix(u3:gnd)
+Ignoring empty pin current: Ix(u3:nout)
+Ignoring empty pin current: Ix(u4:in)
+Ignoring empty pin current: Ix(u4:out)
+Ignoring empty pin current: Ix(u4:vcc)
+Ignoring empty pin current: Ix(u4:gnd)
+Ignoring empty pin current: Ix(u4:nout)
+Ignoring empty pin current: Ix(u5:in)
+Ignoring empty pin current: Ix(u5:out)
+Ignoring empty pin current: Ix(u5:vcc)
+Ignoring empty pin current: Ix(u5:gnd)
+Ignoring empty pin current: Ix(u5:nout)
+Ignoring empty pin current: Ix(u6:in)
+Ignoring empty pin current: Ix(u6:out)
+Ignoring empty pin current: Ix(u6:vcc)
+Ignoring empty pin current: Ix(u6:gnd)
+Ignoring empty pin current: Ix(u6:nout)
+Ignoring empty pin current: Ix(u7:in)
+Ignoring empty pin current: Ix(u7:out)
+Ignoring empty pin current: Ix(u7:vcc)
+Ignoring empty pin current: Ix(u7:gnd)
+Ignoring empty pin current: Ix(u7:nout)
+Ignoring empty pin current: Ix(u1:n009)
+Ignoring empty pin current: Ix(u1:nreset)
+Ignoring empty pin current: Ix(u1:n002)
+Ignoring empty pin current: Ix(u1:n005)
+Ignoring empty pin current: Ix(u1:n008)
+Ignoring empty pin current: Ix(u2:n009)
+Ignoring empty pin current: Ix(u2:nreset)
+Ignoring empty pin current: Ix(u2:n002)
+Ignoring empty pin current: Ix(u2:n005)
+Ignoring empty pin current: Ix(u2:n008)
+Ignoring empty pin current: Ix(u3:in)
+Ignoring empty pin current: Ix(u3:out)
+Ignoring empty pin current: Ix(u3:vcc)
+Ignoring empty pin current: Ix(u3:gnd)
+Ignoring empty pin current: Ix(u3:nout)
+Ignoring empty pin current: Ix(u4:in)
+Ignoring empty pin current: Ix(u4:out)
+Ignoring empty pin current: Ix(u4:vcc)
+Ignoring empty pin current: Ix(u4:gnd)
+Ignoring empty pin current: Ix(u4:nout)
+Ignoring empty pin current: Ix(u5:in)
+Ignoring empty pin current: Ix(u5:out)
+Ignoring empty pin current: Ix(u5:vcc)
+Ignoring empty pin current: Ix(u5:gnd)
+Ignoring empty pin current: Ix(u5:nout)
+Ignoring empty pin current: Ix(u6:in)
+Ignoring empty pin current: Ix(u6:out)
+Ignoring empty pin current: Ix(u6:vcc)
+Ignoring empty pin current: Ix(u6:gnd)
+Ignoring empty pin current: Ix(u6:nout)
+Ignoring empty pin current: Ix(u7:in)
+Ignoring empty pin current: Ix(u7:out)
+Ignoring empty pin current: Ix(u7:vcc)
+Ignoring empty pin current: Ix(u7:gnd)
+Ignoring empty pin current: Ix(u7:nout)
+Heightened Def Con from 2.01579e-005 +++to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +to 2.01581e-005
+Heightened Def Con from 2.01581e-005 ++++to 2.01581e-005
+Heightened Def Con from 2.01581e-005 to 2.01581e-005
+Heightened Def Con from 2.01581e-005 ++++to 2.01581e-005
+Heightened Def Con from 2.01581e-005 ++to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +to 2.01581e-005
+Heightened Def Con from 2.01581e-005 +++to 2.01581e-005
+Heightened Def Con from 2.01581e-005 to 2.01581e-005
+Heightened Def Con from 2.01581e-005 to 2.01585e-005
+Heightened Def Con from 2.01585e-005 to 2.01615e-005
+Heightened Def Con from 2.01619e-005 to 2.01649e-005
+Heightened Def Con from 0.100001 ++++++++++++++++to 0.100001
+Heightened Def Con from 0.100001 to 0.100001
+
+Date: Sun Feb 05 14:18:12 2023
+Total elapsed time: 0.899 seconds.
+
+tnom = 27
+temp = 27
+method = modified trap
+totiter = 11035
+traniter = 10989
+tranpoints = 2352
+accept = 1714
+rejected = 694
+matrix size = 238
+fillins = 51
+solver = Normal
+Thread vector: 39.4/20.8[6] 12.3/8.6[6] 9.6/5.9[6] 0.8/3.3[1]  2592/500
+Matrix Compiler1: 10.73 KB object code size  5.4/3.2/[1.5]
+Matrix Compiler2: 15.17 KB object code size  3.0/6.2/[1.0]
+

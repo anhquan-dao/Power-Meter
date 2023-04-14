@@ -1,0 +1,80 @@
+\documentclass[12pt,letterpaper]{report}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+\usepackage[margin=0.25in]{geometry}
+\geometry{
+  top=0.8in,            
+  inner=1.0in,
+  outer=1.0in,
+  bottom=0.9in,
+  headheight=4ex,       
+  headsep=6.5ex,         
+}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+
+% We will externalize the figures
+\usepgfplotslibrary{external}
+\tikzexternalize
+
+\usepackage[utf8]{inputenc}
+\usepackage[utf8]{vietnam}
+\usepackage[english]{babel}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{verbatim}
+\usepackage{charter}
+\usepackage{amsmath}
+\usepackage{appendix}
+\usepackage{ragged2e}
+\usepackage{array}
+\usepackage{etoolbox}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{arydshln}
+\usepackage[format=hang,labelfont=bf]{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{multirow}
+\usepackage{pdfpages}
+\usepackage{subfiles}
+\usepackage[compact]{titlesec}
+\usepackage{stfloats}
+\usepackage[style=ieee]{biblatex}
+\usepackage{subfiles}
+\usepackage[acronym]{glossaries}
+\usepackage{gensymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+
+\addbibresource{datasheet_ref.bib}
+\addbibresource{temp_ref.bib}
+
+\title{PowerMeterOutline}
+\author{Quan Dao Nguyen Anh}
+\date{Apri 2023}
+
+\begin{document}
+
+\maketitle
+
+\subfile{note.tex}
+
+\printbibliography
+
+\end{document}
