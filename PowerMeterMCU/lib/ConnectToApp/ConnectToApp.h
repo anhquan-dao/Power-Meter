@@ -18,6 +18,7 @@
 
 #define ServerTask "ServerTask"
 
+class AppInterface;
 class STAInfo
 {
     public:
@@ -26,10 +27,10 @@ class STAInfo
         char STA_pass[100];
         uint8_t STA_pass_length = 0;
 
-        void setSSID(char *ssid);
+        void setSSID(const char *ssid);
         uint8_t getSSID(char *buffer, uint8_t buffer_size);
 
-        void setPass(char *pass);
+        void setPass(const char *pass);
         uint8_t getPass(char *buffer, uint8_t buffer_size);
 
 };
@@ -72,6 +73,8 @@ class WifiConnect
         WiFiServer server;
         WiFiClient client;
 
+        AppInterface *app;
+
         const char host_name[10] = "PowerNode";
         
 
@@ -89,7 +92,7 @@ class WifiConnect
          * @param ssid
          * @param pass
          */
-        void set_STA_parameter(char *ssid, char *pass);
+        void set_STA_parameter(const char *ssid, const char *pass);
 
         /**
          * @brief Start connection to the STA
@@ -127,6 +130,11 @@ class WifiConnect
          * @brief Async task checking user input on the device's self server
          */
         static void check_user_input_task(void *param);
+
+        /**
+         * @brief 
+         */
+        void set_app_ptr(AppInterface *app_);
         
         STAInfo STA_info;
 
@@ -180,16 +188,15 @@ class AppInterface
          */
         int8_t setMeasurementPayload(float current_, float voltage_);
         
-    private:
-
         /**
          * @brief Check if host is alive
          * @return -1 if Error
          */
         int8_t checkHostAlive();
 
+    private:
         typedef struct MeasurementPayload_t{
-            char buf[30] = "current=00.000&voltage=00.000";
+            char buf[34] = "current=00.00000&voltage=00.00000";
             float current;
             float voltage;
         } MeasurementPayload_t;
@@ -197,11 +204,12 @@ class AppInterface
         MeasurementPayload_t meas_payload;
 
         IPAddress hostAddress;
-        uint8_t hostIP[4];
         uint16_t port = 8090;
         int8_t host_alive;
 
         HTTPClient *http;
         int16_t httpResponseCode;
         String POST_uri;
+
+    friend WifiConnect;
 };

@@ -59,7 +59,7 @@ int8_t DeviceCfg::checkHostIP(memory_id_t *data, int8_t *buffer, uint16_t buffer
             dot_count++;
             continue;
         }
-        
+
         // Check if IP contains only number
         if(*(buffer+i) < 0x30 || *(buffer+i) > 0x39)
         {

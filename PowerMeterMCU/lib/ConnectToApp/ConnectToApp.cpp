@@ -1,7 +1,7 @@
 #include <ConnectToApp.h>
 #include <index.h>
 
-void STAInfo::setSSID(char *ssid)
+void STAInfo::setSSID(const char *ssid)
 {
     memset(STA_ssid, 0, 100);
     STA_ssid_length = TypeHelper::get_char_array_length(ssid);
@@ -22,7 +22,7 @@ uint8_t STAInfo::getSSID(char *buffer, uint8_t buffer_size)
     return STA_ssid_length;
 }
 
-void STAInfo::setPass(char *pass)
+void STAInfo::setPass(const char *pass)
 {
     memset(STA_pass, 0, 100);
     STA_pass_length = TypeHelper::get_char_array_length(pass);
@@ -108,7 +108,7 @@ void WifiConnect::send_homepage()
     client.println();
 }
 
-void WifiConnect::set_STA_parameter(char *ssid, char *pass)
+void WifiConnect::set_STA_parameter(const char *ssid, const char *pass)
 {
     STA_info.setSSID(ssid);
     STA_info.setPass(pass);
@@ -120,11 +120,6 @@ int8_t WifiConnect::start_connection()
     int8_t configure_ret;
 
     WiFi.mode(WIFI_AP_STA);
-
-    // WiFi.disconnect();
-    // WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-    // WiFi.setHostname(host_name); //define hostname
-    // log_i("Set host name %s for device", WiFi.getHostname());
 
     // Setup the device as AP for configuring STA info
     IPAddress local_ip(192,168,1,1);
@@ -142,79 +137,10 @@ int8_t WifiConnect::start_connection()
         return configure_ret;
     }
 
-    xTaskCreatePinnedToCore(check_status_task, "check_connect_task", 2000, 
-                                    NULL, 0, status_check, 0);
-
     xTaskCreatePinnedToCore(check_user_input_task, "check_user_input_task", 4000, 
                                     NULL, 0, user_input, 1);
 
     return 0;
-}
-
-void WifiConnect::check_status_task(void *param)
-{
-    WifiConnect *_this = WifiConnect::getInstance();
-
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    TickType_t xFrequency = 300 / portTICK_PERIOD_MS;
-
-    WifiConnect::StatusMessage txMessage;
-    bool connected = false;
-
-    uint8_t scan_channel = 1;
-    int16_t scan_status = 0;
-    int8_t found_ssid = 0;
-    
-    // Every second check for Wifi.status()
-    // If connected, store the local IP and set connected flag to true
-    for(;;)
-    {
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        txMessage.status = WiFi.status();        
-        if (txMessage.status == WL_CONNECTED) 
-        {   
-            if(connected == false)
-            {
-                IPAddress localIP = WiFi.localIP();
-                connected = true;
-                txMessage.localIP[0] = localIP[0];
-                txMessage.localIP[1] = localIP[1];
-                txMessage.localIP[2] = localIP[2];
-                txMessage.localIP[3] = localIP[3];
-            }
-        }
-        else
-        {
-            connected = false;
-        }
-        xQueueSendToFront(*(_this->status_queue), (void *)&txMessage, 0);
-
-        if(found_ssid == 0)
-        {
-            scan_channel >= 14 ? scan_channel = 1 : scan_channel++;
-
-            scan_status = WiFi.scanNetworks();
-            log_e("Channel %d. Scan status: %d", scan_channel, scan_status);
-            if(scan_status < 0)
-            {
-                continue;
-            }
-
-            for(int i=0; i<scan_status; i++)
-            {   
-                log_e("%s", WiFi.SSID(i).c_str());
-                if(WiFi.SSID(i) == _this->STA_info.STA_ssid)
-                {
-                    found_ssid = 1;
-                    _this->configure_STA();
-                    break;
-                }
-            }
-            
-            continue;
-        }     
-    }   
 }
 
 void WifiConnect::check_user_input_task(void *param)
@@ -297,6 +223,30 @@ void WifiConnect::check_user_input_task(void *param)
                             device_cfg.writeMemoryById(DeviceCfg::WIFIPASS, (int8_t*)resource[1], 32);
                             log_e("Get STA params SSID: %s PASS: %s", resource[0], resource[1]);
                         }
+                        else if(route == "server_info")
+                        {
+                            resource_idx[0] = resource_buffer.indexOf("=") + 1;
+
+                            memset(resource[0], 0, 32);
+                            resource_buffer.substring(resource_idx[0]).toCharArray(resource[0], 32);
+                            HTTPHelper::decode(resource[0]);
+
+                            resource_length[0] = TypeHelper::get_char_array_length(resource[0]);
+                            log_e("Resource_length: %d", resource_length[0]);
+
+                            int8_t plausibility_check = device_cfg.writeMemoryById(DeviceCfg::HOSTIP, (int8_t*)resource[0], resource_length[0]);
+                            if(plausibility_check !=0)
+                            {
+                                log_e("Plausibility check result: %d", plausibility_check);
+                            }
+                            else
+                            {
+                                log_e("Get host ip: %s", resource[0]);
+                            }
+                            
+                        }
+
+                        _this->send_OKresp();
                         break;
                     }
                     
@@ -316,10 +266,12 @@ void WifiConnect::check_user_input_task(void *param)
                                 _this->send_OKresp();                                
 
                                 String resp_text = "{\"connect\":\"";
-                                resp_text += _this->wifiStatus_struct[_this->get_status()].name;
-                                resp_text += "\",\"host_status\":\"1.1.1.1\"}";
+                                resp_text += _this->wifiStatus_struct[WiFi.status()].name;
+                                resp_text += "\",\"host_status\":";
+                                resp_text += _this->app->host_alive;
+                                resp_text += "}\n";
+
                                 _this->client.println(resp_text);
-                                _this->client.println();
                             }
                             else if(requested_resource == "reset")
                             {
@@ -367,8 +319,18 @@ int8_t WifiConnect::get_local_IP(uint8_t *buffer, uint8_t buffer_size)
         return -1;
     }
 
+    if(xQueuePeek(*status_queue, (void*)status_msg, 0) != pdTRUE)
+    {
+        return -1;
+    }
+
     memcpy(buffer, status_msg->localIP, 4);
     return 0;
+}
+
+void WifiConnect::set_app_ptr(AppInterface *app_)
+{
+    app = app_;
 }
 
 //======================================================
@@ -382,21 +344,28 @@ AppInterface::AppInterface()
 
 int8_t AppInterface::setHost(uint8_t *hostIP_, uint16_t port_)
 {
-    if(memcmp(&hostIP, hostIP, 4) != 0)
+    if(memcmp(&hostAddress[0], &hostIP_, 4) != 0)
     {
-        memcpy(&hostIP_, hostIP, 4);
+        hostAddress[0] = *hostIP_;
+        hostAddress[1] = *(hostIP_+1);
+        hostAddress[2] = *(hostIP_+2);
+        hostAddress[3] = *(hostIP_+3);
+        port = port_;
+        host_alive = checkHostAlive();
+        return host_alive;
     }
-    
-    port = port_;
 
-    host_alive = checkHostAlive();
-
-    return host_alive;
+    return 0;
 }
 
 int16_t AppInterface::POST(String route, char *data)
 {
-    if(!http->begin("http://172.16.133.43:8090/esp32_post"))
+
+    POST_uri = "http://" + hostAddress.toString() + ":8090/" + route;
+
+    log_e("%s", POST_uri.c_str());
+
+    if(!http->begin(POST_uri))
     {
         return -1;
     }
@@ -422,12 +391,8 @@ int16_t AppInterface::POST_measPayload(String route)
 
 int8_t AppInterface::checkHostAlive()
 {
-    hostAddress[0] = hostIP[0];
-    hostAddress[1] = hostIP[1];
-    hostAddress[2] = hostIP[2];
-    hostAddress[3] = hostIP[3];
-
-    return (Ping.ping(hostAddress, 1) - 1);
+    host_alive = (Ping.ping(hostAddress, 1) - 1);
+    return host_alive;
 }
 
 int8_t AppInterface::setMeasurementPayload(float current_, float voltage_)
@@ -435,7 +400,7 @@ int8_t AppInterface::setMeasurementPayload(float current_, float voltage_)
     meas_payload.current = current_;
     meas_payload.voltage = voltage_;
 
-    sprintf(meas_payload.buf, "current=%06.3f&voltage=%06.3f", current_, voltage_);
+    sprintf(meas_payload.buf, "current=%08.6f&voltage=%08.6f", current_, voltage_);
 
     return 0;
 }

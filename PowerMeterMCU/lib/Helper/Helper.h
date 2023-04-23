@@ -9,8 +9,8 @@ class TypeHelper
         ~TypeHelper(){}
 
     public:
-        static uint8_t get_char_array_length(char *input);
-        static uint8_t get_char_array_length(uint8_t *input);
+        static uint8_t get_char_array_length(const char *input);
+        static uint8_t get_char_array_length(const uint8_t *input);
 };
 
 class HTTPHelper

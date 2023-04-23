@@ -18,7 +18,7 @@ const char MAIN_page[] PROGMEM = R"=====(
         <br>
     </div>
 
-    <form action="/wifi_info", method="POST", id="wifi_info", name="server_info", accept-charset=utf-8>
+    <form action="/wifi_info", method="POST", id="wifi_info", name="wifi_info", accept-charset=utf-8>
         Wifi SSID: <input type="text" name="ssid" id="Wifi SSID">
         <br>
         Wifi Pass: <input type="password" name="pass" id="Wifi Pass">
@@ -34,14 +34,17 @@ const char MAIN_page[] PROGMEM = R"=====(
         <br>
     </form>
 
-    <button type="button" onclick="reset()">Click Me!</button>
+    <button type="button" onclick="reset()">Reset</button>
 
     <script type="text/javascript">
         
         window.onload = function()
         {
-            var form = document.querySelector("form");
-            form.onsubmit = submitForm.bind(form);
+            var form_list = document.querySelectorAll("form");
+            for(let i=0;i<form_list.length;i++) {
+                var form = form_list[i];
+                form.onsubmit = submitForm.bind(form);
+            }
         }
 
         function serialize (data) {
@@ -88,7 +91,6 @@ const char MAIN_page[] PROGMEM = R"=====(
                 if(xhttp.status === 201) 
                 {
                     console.log("Post successfully created!");
-
                 }
             }
 
@@ -107,8 +109,14 @@ const char MAIN_page[] PROGMEM = R"=====(
                     console.log(obj);
                     document.getElementById("wifiStatus").innerHTML =
                     obj.connect;
-                    document.getElementById("hostStatus").innerHTML =
-                    obj.host_status;
+                    if(obj.host_status == -1) {
+                        document.getElementById("hostStatus").innerHTML = "Not reachable";
+                    }
+                    else {
+                        document.getElementById("hostStatus").innerHTML = "OK";
+                    }
+                    
+                    
                 }
             };
             xhttp.open("GET", "wifiStatus", true);

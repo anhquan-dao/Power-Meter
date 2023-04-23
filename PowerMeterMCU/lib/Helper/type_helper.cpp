@@ -1,6 +1,6 @@
 #include <Helper.h>
 
-uint8_t TypeHelper::get_char_array_length(char *input)
+uint8_t TypeHelper::get_char_array_length(const char *input)
 {
     uint8_t input_length = 0;
     while (input[input_length] != '\0') {
@@ -10,7 +10,7 @@ uint8_t TypeHelper::get_char_array_length(char *input)
     return input_length;
 }
 
-uint8_t TypeHelper::get_char_array_length(uint8_t *input)
+uint8_t TypeHelper::get_char_array_length(const uint8_t *input)
 {
     return get_char_array_length((char*)input);
 }

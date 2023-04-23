@@ -48,7 +48,7 @@ class DeviceCfg
         {
             {WIFISSID, 0, 32, &DeviceCfg::defaultPlausibility, "WifiSSID"},
             {WIFIPASS, 32, 32, &DeviceCfg::defaultPlausibility, "WifiPASS"},
-            {HOSTIP, 64, 15, &DeviceCfg::checkHostIP, "HostIP"}
+            {HOSTIP, 64, 15, &DeviceCfg::checkHostIP, "HostIP"},
         };
 
         char wifi_ssid[32];
