@@ -2,6 +2,9 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 /************************************************************************************************
 ** Declare constants used in the class                                                         **
 ************************************************************************************************/
@@ -31,8 +34,6 @@ const uint8_t  INA_ALERT_BUS_UNDER_VOLT_BIT{12};    ///< Register bit
 const uint8_t  INA_ALERT_POWER_OVER_WATT_BIT{11};   ///< Register bit
 const uint8_t  INA_ALERT_CONVERSION_RDY_BIT{10};    ///< Register bit
 const uint8_t  INA_DEFAULT_OPERATING_MODE{B111};    ///< Default continuous mode
-const uint8_t  INA219_SHUNT_VOLTAGE_REGISTER{1};    ///< INA219 Shunt Voltage Register
-const uint8_t  INA219_CURRENT_REGISTER{4};          ///< INA219 Current Register
 const uint16_t INA219_BUS_VOLTAGE_LSB{400};         ///< INA219 LSB in uV *100 4.00mV
 const uint16_t INA219_SHUNT_VOLTAGE_LSB{100};       ///< INA219 LSB in uV *10  10.0uV
 const uint16_t INA219_CONFIG_AVG_MASK{0x07F8};      ///< INA219 Bits 3-6, 7-10
@@ -43,31 +44,41 @@ const uint8_t  INA219_BRNG_BIT{13};                 ///< INA219 Bit for BRNG in 
 const uint8_t  INA219_PG_FIRST_BIT{11};             ///< INA219 1st bit of Programmable Gain
 const uint16_t INA219_ENABLE_AVG_BIT{0x0402};
 
+#define INA_CONFIGURATION_REGISTER          0x0000  // Configuration Register address
+#define INA_SHUNT_VOLTAGE_REGISTER          0x0001  // Shunt Voltage Register address
+#define INA_BUS_VOLTAGE_REGISTER            0x0002  // Bus Voltage Register address
+#define INA_POWER_REGISTER                  0x0003  // Power Register adress
+#define INA_CURRENT_REGISTER                0x0004  // Current Register address
+#define INA_CALIBRATION_REGISTER            0x0005  // Calibration Register address
+
+#define INA_CONFIGURATION_REGISTER_LEN      0x02    // Configuration Register length
+#define INA_SHUNT_VOLTAGE_REGISTER_LEN      0x02    // Shunt Voltage Register length
+#define INA_BUS_VOLTAGE_REGISTER_LEN        0x02    // Bus Voltage Register length
+#define INA_POWER_REGISTER_LEN              0x02    // Power Register length
+#define INA_CURRENT_REGISTER_LEN            0x02    // Current Register length
+#define INA_CALIBRATION_REGISTER_LEN        0x02    // Calibration Register length
+
+#define MAX_TX_BUFFER                       10
+#define MAX_RX_BUFFER                       10
+
 class INA219
 {
     public:
         INA219() = delete;
 
-        INA219(int sda, int scl, int i2c_clock, int addr)
+        INA219(int sda, int scl, uint32_t i2c_clock, int addr)
         {
             i2c_addr = addr;
             Wire.begin(sda, scl, i2c_clock);
             Wire.beginTransmission(addr);
             error = Wire.endTransmission();
 
-            writeMessage();
+            // px_sensorDataQueue = new QueueHandle_t;
+            // *px_sensorDataQueue = xQueueCreate(4, sizeof(t_messageSensor));
 
-            while(error != 0)
-            {
-                if(Serial)
-                {
-                    state = INIT;
-                    writeMessage();
-                }
-                error = Wire.endTransmission();
-                delay(10);
-            }
-            state = NORMAL;
+            // px_readSensor = new TaskHandle_t;
+
+            e_state = INIT;
         }
 
         ~INA219()
@@ -135,35 +146,37 @@ class INA219
             CNT_SHUNT_BUS = 7
         };
 
-        void configure(reset_t reset, brng_t brng, pga_t pga, badc_t badc, sadc_t sadc, mode_t mode)
-        {   
-            config = 0;
-            config = reset << 15 | brng << 13 | pga << 11 | badc << 7 | sadc << 3 | mode;
-            buffer[0] = config >> 8;
-            buffer[1] = config;
-            i2c_write(INA_CONFIGURATION_REGISTER, buffer, 2);
+        int8_t configure(reset_t reset, brng_t brng, pga_t pga, badc_t badc, sadc_t sadc, mode_t mode)
+        {           
+            config = 0x0000;   
+            config = (reset << 15) | (brng << 13) | (pga << 12) | (badc << 10) | (sadc << 6) | mode;
+            
+            memcpy(buffer, &config, INA_CONFIGURATION_REGISTER_LEN);
+            i2c_write(INA_CONFIGURATION_REGISTER, buffer, INA_CONFIGURATION_REGISTER_LEN);
 
-#ifdef SERIAL_DEBUG
-            Serial.println("Configuration to write to INA219:");
-            Serial.print("0x");
-            // if(config < 0x1000) Serial.print("0");
-            Serial.println(config, HEX);
-
-            Serial.println("Configuration stored in INA219");
-            i2c_read(INA_CONFIGURATION_REGISTER, 2);
-            Serial.print("0x");
-            if(rx_buffer[0] < 16) Serial.print("0");
-            Serial.print(rx_buffer[0], HEX);
-            if(rx_buffer[1] < 16) Serial.print("0");
-            Serial.print(rx_buffer[1], HEX);
-#endif
+            i2c_read(INA_CONFIGURATION_REGISTER, INA_CONFIGURATION_REGISTER_LEN);
+            if(memcmp(rx_buffer, &config, 2) == 0)
+            {
+                log_e("Configuration set %04X & stored %02X%02X", config, rx_buffer[0], rx_buffer[1]);
+                e_state = CONFIGURED;
+                return 0;
+            }
+            log_e("Fail to configure INA sensor. Configuration set %04X & stored %02X%02X", config, rx_buffer[0], rx_buffer[1]);
+            e_state = CONFIGURED;
+            return 0;
         }
 
-        void calibrate(float shunt_val, float v_shunt_max, float i_max_expected)
+        int8_t calibrate(float shunt_val, float v_shunt_max, float i_max_expected)
         {
+
+            if(e_state < CONFIGURED)
+            {
+                return -1;
+            }
+
             r_shunt = shunt_val;
 
-            current_lsb = i_max_expected / 32767;
+            current_lsb = i_max_expected / 32767.0;
 
             /* From datasheet: This value was selected to be a round number near the Minimum_LSB.
             * This selection allows for good resolution with a rounded LSB.
@@ -171,8 +184,8 @@ class INA219
             */
             uint16_t digits = 0;
             while( current_lsb > 0.0 ){//If zero there is something weird...
-                if( (uint16_t)current_lsb / 1){
-                    current_lsb = (uint16_t) current_lsb + 1;
+                if(current_lsb >= 1){
+                    current_lsb = (uint16_t)current_lsb + 1;
                     current_lsb /= pow(10,digits);
                     break;
                 }
@@ -182,14 +195,22 @@ class INA219
                 }
             };
 
-            float swap = (0.04096)/(current_lsb*r_shunt);
-            cal_value = (uint16_t) swap;
+            float trunc = (0.04096)/(current_lsb*r_shunt);
+            cal_value = trunc;
             power_lsb = current_lsb * 20;
 
-            buffer[0] = cal_value >> 8;
-            buffer[1] = cal_value;
+            memcpy(buffer, &cal_value, INA_CALIBRATION_REGISTER_LEN);
+            i2c_write(INA_CALIBRATION_REGISTER, buffer, INA_CALIBRATION_REGISTER_LEN);
 
-            i2c_write(INA_CALIBRATION_REGISTER, buffer, 2);
+            i2c_read(INA_CALIBRATION_REGISTER, INA_CALIBRATION_REGISTER_LEN);
+            if(memcmp(rx_buffer, &cal_value, 2) == 0)
+            {
+                e_state = CALIBRATED;
+                log_e("Calibration set %04X & stored %02X%02X", cal_value, rx_buffer[1], rx_buffer[0]);
+                return 0;
+            }
+            log_e("Fail to calibrate INA sensor. Calibration set %04X & stored %02X%02X", cal_value, rx_buffer[1], rx_buffer[0]);
+            return -1;
 
         }
 
@@ -200,6 +221,10 @@ class INA219
             if(size !=0)
                 Wire.write(buffer_, size);
             error = Wire.endTransmission();
+            if(error != ESP_OK)
+            {
+                log_e("Fail to write to register %d", reg_);
+            }
             delay(10);
         }
         
@@ -211,9 +236,9 @@ class INA219
             i2c_write(reg_, buffer, size);
         }
 
-        void i2c_read(uint8_t reg_, uint8_t size)
+        void i2c_read(uint8_t reg, uint8_t size)
         {
-            i2c_write_null(reg_, 0);
+            i2c_write_null(reg, 0);
 
             if(error != 0)
             {
@@ -227,6 +252,7 @@ class INA219
                 return;
             }
 
+            memset(rx_buffer, 0, MAX_RX_BUFFER);
             for(int i=0; i<size; i++)
             {
                 rx_buffer[i] = Wire.read();
@@ -235,13 +261,13 @@ class INA219
 
         void read_voltage()
         {
-            i2c_read(INA_BUS_VOLTAGE_REGISTER, 2);
+            i2c_read(INA_BUS_VOLTAGE_REGISTER, INA_BUS_VOLTAGE_REGISTER_LEN);
             voltage = (((rx_buffer[0] << 8) | rx_buffer[1]) >> 3) * 0.004;
         }
 
         void read_shunt_voltage()
         {
-            i2c_read(INA219_SHUNT_VOLTAGE_REGISTER, 2);
+            i2c_read(INA_SHUNT_VOLTAGE_REGISTER, INA_SHUNT_VOLTAGE_REGISTER_LEN);
             uint16_t sign_mask = (uint16_t)(0xF000 << ((config & ~INA219_CONFIG_PG_MASK) >> 11));
             sign_mask &= 0x7FFF;
 
@@ -259,7 +285,7 @@ class INA219
 
         void read_current()
         {
-            i2c_read(INA219_CURRENT_REGISTER, 2);
+            i2c_read(INA_CURRENT_REGISTER, INA_CURRENT_REGISTER_LEN);
             int16_t current_reg = (rx_buffer[0] << 8) | rx_buffer[1];
             current = current_reg * current_lsb;
             capacity += current * 0.1 / 3600;
@@ -270,47 +296,61 @@ class INA219
 #endif     
         }
         
-        void writeMessage()
+        int8_t start()
         {
-            tx_msg_cnt++;
-            writeHeader();
-            writeByte(state);
-            writeByte(tx_msg_cnt);
-            writeByte(error);
-            writeFloat(voltage);
-        }
-        void writeHeader()
-        {
-            Serial.write(header, 2);
-        }
-        void writeByte(uint8_t data)
-        {
-            Serial.write(data);
-        }
-        void writeFloat(float data)
-        {
-            uint8_t float_to_byte_arr[4];
-            memcpy(float_to_byte_arr, &data, 4);
-            Serial.write(float_to_byte_arr, 4);
+            if(e_state < CALIBRATED)
+            {
+                return -1;
+            }
+
+            xTaskCreatePinnedToCore(read_sensor_task, "read_sensor_task", 4000, 
+                                    (void*)this, 0, px_readSensor, 1);
+
+            e_state = NORMAL;
+            return 0;
         }
 
-        uint8_t tx_msg_cnt;
-        uint8_t rx_msg_cnt;
-        uint8_t error_cnt;
+        static void read_sensor_task(void *param)
+        {
+            INA219 *_this = (INA219*)param;
+
+            TickType_t xLastWakeTime = xTaskGetTickCount();
+            TickType_t xFrequency = 100 / portTICK_PERIOD_MS;
+
+            for(;;)
+            {
+                vTaskDelayUntil(&xLastWakeTime, xFrequency);
+                _this->read_voltage();
+                _this->read_current();
+
+                _this->x_sensorData.voltage = _this->voltage;
+                _this->x_sensorData.current = _this->current;
+                if(xQueueSend(*_this->px_sensorDataQueue, (void*)&(_this->x_sensorData), 50 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+
+                }
+            }
+            
+        }
+
+        uint8_t o_configure = false;
         uint8_t error;
 
         uint8_t i2c_addr;
-        uint8_t buffer[100];
-        uint8_t rx_buffer[100];
+        uint8_t buffer[MAX_TX_BUFFER];
+        uint8_t rx_buffer[MAX_RX_BUFFER];
 
         uint16_t config;
 
-        uint8_t state;
-        enum state_t{
+        typedef enum n_state{
             INIT,
+            CONFIGURED,
+            CALIBRATED,
             NORMAL,
-            SHUTDOWN
-        };
+            SHUTDOWN,
+            ERROR
+        }t_state;
+        t_state e_state;
 
         uint8_t header[2] = {0x79, 0x97};
 
@@ -324,4 +364,14 @@ class INA219
         float current_lsb;
         uint16_t cal_value;
         float power_lsb;
+
+        TaskHandle_t *px_readSensor;
+        typedef struct s_messageSensor
+        {	
+            float voltage;
+            float current;
+        } t_messageSensor;
+
+        t_messageSensor x_sensorData;
+        QueueHandle_t *px_sensorDataQueue;
 };

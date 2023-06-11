@@ -9,67 +9,47 @@
     In this section, the switching operation of a MOSFET is discussed
     \begin{enumerate}
         \item MOSFET switching principle.
+        \item Type of load switch.
+        \item On resistance $R_{ds}$.
         \item Gate charge.
         \item Safe Operating Area.
-        \item Other parameters.
+        \item IRF4905S.
     \end{enumerate}
 
     \pagebreak
-    \subsection{MOSFET basic switching circuit}
+    \subsection{MOSFET switching principle}
 
     \justify
-    For the N-channel MOSFET to be  "switched on" (in triode or saturation region), the $V_{gs} > V_{th}$ with Gate-Source threshold voltage $V_{th} > 0$. A typical configuration of N-channel MOSFET switch is shown in Figure \ref{fig:NMOS_lowside_switch}. The PNP allows for the use small current switch signal (MCU, op-amp, etc.). The operation principle of the said circuit is as follows:
-
-    \begin{itemize}
-        \item To fully switch the N-channel MOSFET $M1$ on (saturation), the Gate voltage $V_{gs}$ must be greater than $V_{ds}-V_{th}$. Because the Source terminal is connected to Ground, the Gate can be connected directly to $V_{in}$ to turn on the MOSFET.
-        \item When signal $V_s=0V$, the PNP transistor $Q1$ conducts, the Gate terminal is pulled down with $R2$, $M1$ is turned off. 
-        \item When signal $V_s=5V$, $Q1$ stops conducting, the Gate terminal is pulled up with $R_{gate}$, $M1$ is turned on. 
-        \item Because the load is an RC network, $M1$ should be turned on at a slower rate than turning off to reduce inrush current.
-        \item The Zener diode $D1$ connected across the Source-Gate of $M1$ clamps the voltage at the diode zener breakdown voltage which is below the specified maximum $V_{gs}$
-
-    \end{itemize}
+    For the N-channel MOSFET to be  "switched on" (in triode or saturation region), $V_{gs} > V_{th}$ with Gate-Source threshold voltage $V_{th} > 0$. To achieve this, a simple circuit such as in Figure \ref{fig:simple_nmos_switch} can be used. This configuration is called low-side switch where  the switch (MOSFET) is connected to the negative terminal of the supply voltage. For the P-channel MOSFET, $V_{gs} < V_{th}$ with $V_{th} < 0$ which leads to the simple circuit shown in Figure \ref{fig:simple_pmos_switch}. This configuration is called high-side switch where  the switch is connected to the positive terminal of the supply voltage.
 
     \begin{figure}[!h]
-        \centerline{\includegraphics[scale=0.4]{media/example_NMOS_low_switch.png}}
-        \caption{Transient analysis of turning on a MOSFET.}
-        \label{fig:NMOS_lowside_switch}
+        \centering
+        \begin{minipage}{.4\textwidth}
+          \centering
+          \includegraphics[width=\linewidth]{media/nmos_switch.png}
+          \captionof{figure}{Low-side MOSFET switch.}
+          \label{fig:simple_nmos_switch}
+        \end{minipage}\qquad
+        \begin{minipage}{.4\textwidth}
+          \centering
+          \includegraphics[width=\linewidth]{media/pmos_switch.png}
+          \captionof{figure}{High-side MOSFET switch.}
+          \label{fig:simple_pmos_switch}
+        \end{minipage}
     \end{figure}
 
-    \pagebreak 
     \justify
-    In the aforementioned configuration, the N-channel MOSFET's Source terminal is connected closer to ground than the load, $M1$ is called a \textbf{Low-side Switch}. Similarly, for the P-channel MOSFET whose "switched on" condition is $V_{gs} < V_{ds}-V_{th}$ with $V_{th} < 0$, the MOSFET is connected closer to $V_{in}$ than the load, thus, it is called a \textbf{High-side Switch}. An example circuit is shown in Figure \ref{fig:gate_charge_curve_2}. In this circuit, the gate is charged with a ideal power supply. blah
-
-    \begin{figure}[!h]
-        \centerline{\includegraphics[width=\linewidth, height=0.5\linewidth]{media/gate_charge_curve_2.png}}
-        \caption{Transient analysis of turning on a P-channel MOSFET}
-        \label{fig:gate_charge_curve_2}
-    \end{figure}
+    In load switching application, high-side switching is more preferable due to having no ground offset (ground loop). In a circuit exhibiting ground loop, the load is not connected directly to the ground of the power supply which can lead to distortion in signal transmission. The offset voltage is calculated by $\Delta V_\text{GND} = -I_d \cdot R_{ds}$ showing that $\Delta V_\text{GND}$ varied, and, thus, not desirable in electronics system.    
 
     \pagebreak
-    \subsection{Type of load switch}
-    \justify
-    In load switching application, high-side switching is more preferable due to having no ground offset (ground loop). In a circuit exhibiting ground loop, the load is not connected directly to the ground of the power supply which can lead to distortion in signal transmission. The offset voltage is calculated by $\Delta V_\text{GND} = -I_d \cdot R_{ds}$ showing that $\Delta V_\text{GND}$ varied, and, thus, not desirable in electronics system. 
-    
-    \justify
-    The use of P-channel MOSFET for this configuration has been discussed previously, and shown to be straight forward. However, to adopt a N-channel MOSFET is more complicated and requires the following extra design steps from the example circuit of Figure \ref{fig:gate_charge_curve_2}:
-    \begin{itemize} 
-        \item The source terminal of the N-channel MOSFET is connected to the positive terminal $V_{in}$ of the power supply. 
-        \item As discussed in previously, $V_g$ must then be driven several voltages higher than $V_s = V_{in}$. This can be achieved by either a boost converter or a charge pump circuit \cite{InfineonNMOSHighDrive}, thus, increasing the complexity and component counts.
-    \end{itemize}
     \subsection{On resistance $R_{ds}$}
-    N-channel MOSFET exhibits lower $R_{ds}$ than that of P-channel MOSFET due to packing density. It is possible to parallel two or more P-channel MOSFETs to reduce the total on resistance $R_{\sum ds}$. However, the designer has to take into account devices' parameters mismatch. An application note from Infineon and Texas Instruments \cite{InfineonParallelMOS} details the effects and solutions of each mismatches, suitable for paralleling up to 4 MOSFETs. However, \cite{MOSFET_parallel_low_power} shows that for low power application, the parameter mismatches is not as detrimental as high power application.
+    N-channel MOSFET exhibits lower $R_{ds}$ than that of P-channel MOSFET due to packing density. It is possible to parallel two or more P-channel MOSFETs to reduce the total on resistance $R_{\sum ds}$. However, the designer has to take into account devices' parameters mismatch. An application note from Infineon and Texas Instruments \cite{InfineonParallelMOS} details the effects and solutions of each mismatches, suitable for paralleling up to 4 MOSFETs. However, \cite{MOSFET_parallel_low_power} shows that for low power application, the parameter mismatches is not as detrimental as for high power application.
     
     \pagebreak
     \subsection{Gate Charge}
 
     \justify
-    In Figure \ref{fig:gate_charge_curve_2}, during a turn-on event, it can be divided into four main intervals. These intervals are shown in Figure \ref{fig:gate_charge_curve_details}.
-    \begin{enumerate}
-        \item $t_0 \rightarrow t_1$: $V_{gs}$ drops to approximately $V_{th}$. At this voltage, the MOSFET enters its ohmic/linear region and starts to conduct $I_d$.
-        \item $t_1 \rightarrow t_2$: $V_{gs}$ drops to $V_{gs,miller}$. At this voltage, the MOSFET is still in its linear region.
-        \item $t_2 \rightarrow t_3$: While $V_{gs}$ maintains at $V_{gs,miller}$- \textbf{Miller plateau}, $V_{ds}$ starts to increases rapidly, allowing $I_d$ to gradually increases. $V_{ds}$ reaches its turn-on voltage $R_{ds}(on)\cdot I_d$ of a few $mV$, and the MOSFET enters its saturation region.
-        \item $t_3 \rightarrow t_4$: In the saturation region, $V_{gs}$ starts increasing to $V_{signal}$. However, $V_{gs}$ is clamped at $D1$'s zener voltage. 
-    \end{enumerate}
+    For a MOSFET to be switched-on, the parasitic capacitors $C_{gs}$ and $C_{gd}$ modeled in Figure \ref{fig:MOSFET_parasitic_cap} has to be charged/discharged. This phenomenon is synonymous to both P-channel and N-channel MOSFET. Thus, in this section, the gate charge curve of P-channel MOSFET is discussed.
 
     \begin{figure}[!h]
         \centering
@@ -82,52 +62,53 @@
         \begin{minipage}{.5\textwidth}
           \centering
           \includegraphics[width=0.8\linewidth]{media/MOSFET_parasitic_cap.png}
-          \captionof{figure}{Model of MOSFET parasitic capacitance.}
+          \captionof{figure}{MOSFET parasitic capacitance.}
           \label{fig:MOSFET_parasitic_cap}
         \end{minipage}
     \end{figure}
-
+    
     \justify
-    This phenomenon is due to the parisitic capacitance modeled in Figure \ref{fig:MOSFET_parasitic_cap}, which has to be charged partially before the MOSFET enters its saturation region. In a MOSFET datasheet, this charge value is reflected by $C_{gs}$ and $C_{gd}$. In particular:
-
-    \begin{itemize}
-        \item $t_0 \rightarrow t_2$: During these periods, both $C_{gs}$ and $C_{gd}$ are charged in parallel via $R_{g}$ until $V_{gs} = V_{gs, miller}$, thus, the charging time and the charge is defined by:
+    During a turn-on event, it can be divided into four main intervals. These intervals are shown in Figure \ref{fig:gate_charge_curve_details}.
+    \begin{enumerate}
+        \item $t_0 \rightarrow t_1$: $V_{gs}$ drops to approximately $V_{th}$. At this voltage, the MOSFET enters its ohmic/linear region and starts to conduct $I_d$.
+        \item $t_1 \rightarrow t_2$: $V_{gs}$ drops to $V_{gs,miller}$, \textbf{Miller plateau}. At this voltage, the MOSFET is still in its linear region. The charging time and the charge is defined by:
         \begin{equation}
             \Delta t_{0\rightarrow2}=R_{g}(C_{gs} +C_{gd})ln\left(\dfrac{V_{signal-source}}{V_{gs, miller}}\right)
         \end{equation}
         \begin{equation}
             Q_{0\rightarrow2}=(C_{gs} +C_{gd})\cdot (-V_{gs, miller})
         \end{equation}
-        \item $t_2 \rightarrow t_3$: Voltage at Gate is maintained while $V_{ds}$ is decreases, meaning that $C_{gd}$ is being charged with a constant current flowing through $R_{g}$. Thus, the following equation: 
+        \item $t_2 \rightarrow t_3$: While $V_{gs}$ maintains at $V_{gs,miller}$, $V_{ds}$ starts to increases to its turn-on voltage $R_{ds}(on)\cdot I_d$ of a few $mV$, and the MOSFET enters its saturation region. Because only $V_{ds}$ decreases, $C_{gd}$ is being charged with a constant current flowing through $R_{g}$. Thus, the following equation: 
         \begin{equation}
             \dfrac{\delta V_{ds}}{\delta t}=\dfrac{1}{C_{gd}}\cdot\dfrac{V_{signal-source} - V_{gs,miller}}{R_{g}} \Rightarrow \Delta V_{ds} = \dfrac{V_{signal-source} - V_{gs,miller}}{R_{g}C_{gd}}\cdot \Delta t_{2\rightarrow3}
         \end{equation}
         \begin{equation}
             Q_{2\rightarrow3}= \left| \dfrac{V_{signal-source} - V_{gs,miller}}{R_{g}} \right|\cdot \Delta t_{2\rightarrow3} 
         \end{equation}
-        Ideally, in saturation region, $V_{ds} = 0V \Rightarrow \Delta V_{ds} = -V_{in}$. Therefore:
+        Ideally, in saturation region, $V_{ds} = 0V \Rightarrow \Delta V_{d} = -V_{in}$. Therefore:
         \begin{equation}
             \Delta t_{2\rightarrow3}=\dfrac{V_{signal-source}}{V_{signal-source} - V_{gs,miller}}\cdot R_{g}C_{gd}
         \end{equation}
         \begin{equation}
             Q_{2\rightarrow3}= -V_{signal-source}\cdot C_{gd}
         \end{equation}
-        \item $t_3 \rightarrow t_4$: Similar to $\Delta t_{0\&2}$, $C_{gs}$ and $C_{gd}$ are charged in parallel via $R_{g}$ until $V_{g} = V_{signal}$.
-    \end{itemize}
+        
+        \item $t_3 \rightarrow t_4$: In the saturation region, $V_{gs}$ starts increasing to $V_{signal}$. However, $V_{gs}$ is clamped at $D1$'s zener voltage. 
+    \end{enumerate}
 
     \justify
-    In this project's application, which does not involve high speed switching, only the interval $t_0 \rightarrow t_3$ is concerned (from turn-off and saturation region of the MOSFET). Thus, the total turn-on time $T_{on}$ and turn-on charge $Q_{on}$ is:
+    In this project's application, which does not involve high speed switching, only the interval $t_0 \rightarrow t_3$ is concerned (from turn-off and saturation region). Thus, the total turn-on time $T_{on}$ and turn-on charge $Q_{on}$ is:
 
     \begin{equation} 
         T_{on} = R_{g}(C_{gs} +C_{gd})ln\left(\dfrac{V_{signal-source}}{V_{gs, miller}}\right) + \dfrac{V_{signal-source}}{V_{gs,miller}}R_{g}C_{gd}
     \end{equation}
 
-    \begin{equation}
+    \begin{equation} \label{eq:estimated_on_charge_1}
         Q_{on} = -[(C_{gs} +C_{gd})\cdot V_{gs, miller} - V_{signal-source}\cdot C_{gd}]
     \end{equation}
 
     \justify
-    In a MOSFET datasheet, the value of $C_{gs}$ and $C_{gd}$ are shown in terms of input capacitance $C_{iss}$ and reverse transfer capacitance $C_{rss}$ which are plotted in the datasheet such as Figure \ref{fig:typical_capacitance_plot}. From the plot, the differnce between $C_{iss}$ and $C_{rss}$ are approximately constant, indicating that $C_{gs}$ is constant, while $C_{gd}$ is non-linear and voltage dependent.
+    In a MOSFET datasheet, the value of $C_{gs}$ and $C_{gd}$ are shown in terms of input capacitance $C_{iss}$ and reverse transfer capacitance $C_{rss}$ which are plotted in the datasheet such as Figure \ref{fig:typical_capacitance_plot}. The differnce between $C_{iss}$ and $C_{rss}$ are approximately constant, meaning $C_{gs}$ is constant, while $C_{gd}$ is non-linear and dependent of $V_{in}$. $V_{gs,miller}$ can be estimated by \eqref{eq:estimated_miller_voltage_TI} with $V_{th}$ and $K_n$ are unique to each MOSFET. Finally, \eqref{eq:estimated_on_charge_1} can be rewritten in \eqref{eq:estimated_on_charge_2}.
 
     \begin{figure}[!h]
         \centerline{\includegraphics[scale=0.25]{media/typical_capacitance_plot.png}}
@@ -135,30 +116,20 @@
         \label{fig:typical_capacitance_plot}
     \end{figure}
 
-    \justify
-    The calculations presented above are complex and cannot account for every turn-on scenarios because of the varying value of $C_{gd}$ dependent of $V_{in}$ and $V_{gs,miller}$ dependent of $I_{d}(\infty)$ (after fully switched on). The nonlinear function of $V_{gs,miller}(I_d)$ is shown in Equation \eqref{eq:estimated_miller_voltage_TI}. Furthermore, the charging of $C_{gd}$ and $C_{gs}$ is not continuously, causing plateau in $I_{g}$ curve similar to that of $V_{gs}$. Instead, a constant value of charge $\hat{Q}_{on}$ is used, and is estimated from the worst-case of the project's application. Equation \eqref{eq:estimated_on_charge} shows the estimated turn-on charge $\hat{Q}_{on}$.
-
     \begin{equation} \label{eq:estimated_miller_voltage_TI}
         V_{gs, miller} = V_{th} + \sqrt{\frac{I_{d}(\infty)}{K_n}}
     \end{equation}
 
-    \begin{equation} \label{eq:estimated_on_charge}
-        \hat{Q}_{on} = -[(C_{gs} +C_{gd}(V_{in}))\cdot V_{gs, miller} + V_{in}\cdot C_{gd}]
-    \end{equation}
-
-    \justify 
-    Because in this project, the total maximum power is limited to $P_{max}=100W$, thus, $I_d(\infty) = P_{max}/V_{in}$. Equation \eqref{eq:estimated_on_charge} becomes a function of $V_{in}$:
-
     \begin{equation} \label{eq:estimated_on_charge_2}
-        \hat{Q}_{on} = [C_{gs} +C_{gd}(V_{in})]\cdot \left(V_{th} + \sqrt{\dfrac{100W}{K_n\cdot V_{in}}} \right) + V_{in}\cdot C_{gd}(V_{in})
+        Q_{on} = [C_{gs} +C_{gd}(V_{in})]\cdot \left(V_{th} + \sqrt{\dfrac{I_{d}(\infty)}{K_n}} \right) + V_{signal-source}\cdot C_{gd}(V_{in})
     \end{equation}
 
     \justify
-    The value $V_{th}$ and $K_n$ are unique to each MOSFET, as well as $C_{gd}$. From the example plot shown in Figure \ref{fig:typical_capacitance_plot}, $C_{gd}$ can be modeled as a function of $V_{in}$.
+    For quick prototyping, the total gate charge $Q_g$ in the MOSFET's datasheet can be used. In the case of IRF4905S, $Q_g$ is $180nC$. For a charge/discharge time of, e.g.,  $t_{sw} = 100ns$, the gate current to switch the MOSFET can be approximated as $I_g = Q_g / t_{sw} = 1.8A$.
 
     \pagebreak
     \subsection{Safe Operating Area (SOA)}
-    In a MOSFET's datasheet, the SOA of the device shows the limitation of the device's opreating range. As long as the desired application is well within the SOA, the device will, in all likelihood, not risk running into problems such as thermal runaway, material degradation, etc. A typical SOA plot of a P-channel MOSFET is shown in figure \ref{fig:typical_SOA_plot}. The SOA lies below the dashed boundary. The SOA is defined by graphing the device's performance in the circuit shown in figure \ref{fig:SOA_circuit}.
+    In a MOSFET's datasheet, the SOA of the device shows the limitation of the device's opreating range. As long as the desired application is well within the SOA, the device will, in all likelihood, not risk running into problems such as thermal runaway, material degradation, etc. A typical SOA plot of a P-channel MOSFET is shown in figure \ref{fig:typical_SOA_plot}. The SOA lies below the dashed boundary.
 
     \begin{figure}[!h]
         \centering
@@ -170,30 +141,27 @@
         \end{minipage}%
         \begin{minipage}{.5\textwidth}
           \centering
-          \includegraphics[width=0.8\linewidth]{media/SOA_circuit.png}
-          \captionof{figure}{Typical MOSFET's setup for graphing SOA.}
-          \label{fig:SOA_circuit}
-        \end{minipage}
-    \end{figure}
-
-    \pagebreak
-    \begin{figure}[!h]
-        \centerline{\includegraphics[scale=0.5]{media/SOA_regions.drawio.png}}
-        \caption{Regions within a MOSFET's SOA.}
+          \includegraphics[width=\linewidth]{media/SOA_regions.drawio.png}
+          \caption{Regions within a MOSFET's SOA.}
         \label{fig:SOA_regions}
+        \end{minipage}
     \end{figure}
 
     \justify
     The SOA can be divided into four regions shown in figure \ref{fig:SOA_regions}:
     \begin{enumerate}
-        \item Region I: In this region, $-V_{ds}$ is determined purely by Ohm's law  $-V_{ds} = R_{ds}(\text{on})\cdot -I_d$ with $-I_d \leq -I_{d,\text{max}}$. Thus, region I spans from $-V_{ds} = 0$ to $-V_{ds} = \dfrac{-I_{d,\text{max}}}{R_{ds}(\text{on})}$.
-        \item Region II: In this region, $-I_{d}$ is limited by $-I_{d,\text{max}}$ as a result of limitation of package, silicon and junction-to-ambient thermal impedance $R_{\theta J A}$. The power consumption $P=I_{d} * V_{ds}$ does not exceed the maximum rating. Thus, region II spans from $-V_{ds} = -I_{d,\text{max}} / R_{ds}(\text{on})$ to $-V_{ds} = \dfrac{P_\text{max}}{-I_{d,\text{max}}}$.
-        \item Region III: In this region, the $-I_{d}$ is limited by $P_\text{max}$ or $-I_d = \dfrac{P_\text{max}}{-V_{ds}}$, hence, the negative coefficient observed from the plot.
+        \item Region I:$-V_{ds}$ is determined purely by Ohm's law  $-V_{ds} = R_{ds}(\text{on})\cdot -I_d$ with $-I_d \leq -I_{d,\text{max}}$. Thus, region I spans from $-V_{ds} = 0$ to $-V_{ds} = \dfrac{-I_{d,\text{max}}}{R_{ds}(\text{on})}$.
+        \item Region II: $-I_{d}$ is limited by $-I_{d,\text{max}}$ as a result of limitation of package, silicon and junction-to-ambient thermal impedance $R_{\theta J A}$. The power consumption $P=I_{d} * V_{ds}$ does not exceed the maximum rating. Thus, region II spans from $-V_{ds} = -I_{d,\text{max}} / R_{ds}(\text{on})$ to $-V_{ds} = \dfrac{P_\text{max}}{-I_{d,\text{max}}}$.
+        \item Region III: the $-I_{d}$ is limited by $P_\text{max}$ or $-I_d = \dfrac{P_\text{max}}{-V_{ds}}$, hence, the negative coefficient observed from the plot.
         \item Region IV: The forth region is limited by thermal instability. 
     \end{enumerate}
 
     \justify
-    Texas Instruments noted that region III and IV are difficult to define. In some device, the boundary of these two regions are seemingly unanimous. Hence, the application should be designed to operate well within the estimated regions defined in the datasheet. Besides region I, the other regions are soft-limited, meaning that operation outside of these regions does not guarantee immediate damage, however, the longevity of the devie is affected.
+    Texas Instruments \cite{TISOA} noted the following:
+    \begin{itemize}
+        \item Region III's and IV's boundary mostly unanimous. Hence, the application should be designed to operate well within the estimated regions defined in the datasheet. 
+        \item Besides region I, the other regions are soft-limited, meaning that operation outside of these regions does not guarantee immediate damage. However, the longevity of the devie is affected.
+    \end{itemize}
 
     \justify
     To ensure the operation of the MOSFET is well within the SOA, the following basic parameters of the device should be:
@@ -256,30 +224,36 @@
         \label{fig:IRF4905S_param}
     \end{figure}    
     
+    \pagebreak
     \section{MOSFET driver}
-    
     \justify
-    In our application which does not involve high speed switching, only $C_{gs}$ and $C_{gd}$ are of concern in transient analysis. For IRF4905S, the maximum total gate charge $Q_g$ is $180nC$. However, for the MOSFET to be in saturation mode, only the parasitic capacitors $C_{gs}$ and $C_{gd}$ needs to be charged. The gate charge curve follows a similar pattern shown in Figure \ref{fig:gate_charge_curve} extracted from the datasheet of IRF4905S. Simulating in LTspice, the curve of $V_gs$ and $I_g$ shows resemblance to the datasheet.
+    While the availability of N-channel MOSFET drivers for both high-side and low-side is abundance, those for P-channel MOSFET are difficult to source. Thus, in this project, a driver circuit has to be designed and built. In this section, the followings are discussed:
+    \begin{enumerate}
+        \item MOSFET basic switching circuit
+        \item Push-pull topology.
+        \item Totem pole alternative topology.
+    \end{enumerate}   
+
+    \pagebreak
+    \subsection{MOSFET basic switching circuit} 
+    \justify
+    An example driver circuit for P-channel MOSFET is shown in Figure \ref{fig:ideal_gate_drive}. In this circuit, the gate is charged with an ideal power supply. The Zener diode $D1$ connected across the Source-Gate of $M1$ clamps the voltage at the diode zener breakdown voltage lower than the specified maximum $V_{gs_max}$.
 
     \begin{figure}[!h]
-        \centerline{\includegraphics[scale=0.5]{media/gate_charge_curve.png}}
-        \caption{IRF905S typical gate charge and Gate-to-Source voltage from datasheet.}
-        \label{fig:gate_charge_curve}
+        \centerline{\includegraphics[width=\linewidth, height=0.5\linewidth]{media/ideal_gate_drive.png}}
+        \caption{Transient analysis of turning on a P-channel MOSFET}
+        \label{fig:ideal_gate_drive}
     \end{figure}
 
-    \begin{figure}[!h]
-        \centerline{\includegraphics[width=\linewidth]{media/gate_charge_curve_3.png}}
-        \caption{LTSpice simulation result for IRF905S gate charge and Gate-to-Source voltage.}
-        \label{fig:gate_charge_curve}
-    \end{figure}
-    
     \justify
-    For IRF4905S, the maximum total gate charge $Q_g$ is $180nC$, and the typical switching time $t_{sw}$ is approximately $100ns$. Then, the gate current needed to switch the MOSFET is $I_g = Q_g / t_{sw} = 1.8A$
+    The diode $D3$ allows for different current to be used for gate discharge and charge. To use with small-current device such as MCU, op-amp, etc., a transistor In the example, the larger current is used to charge the gate which leads to quick turn-off and slow turn-on which is desirable for application with capacitive load to reduce in-rush current. This effect cannot be replicated with a single transistor
+
+    \pagebreak
+    \subsection{Push-pull topology}
 
     \justify
-    Therefore, the 
+    In an ideal driver such as in Figure \ref{fig:gate_charge_curve_2}, the $V_{gs}$ should be as close to $0V$ for a turn-off event, and to $V_{in}$ for a turn-on event. In the case in Figure \ref{fig:NMOS_lowside_switch}, the single transistor $Q_1$ will not be driven fully into saturation or cut-off with the fixed value of $R_1$ over a large range of $V_{in}$. 
 
-    \justify
     
     \pagebreak
 

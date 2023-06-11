@@ -2,10 +2,9 @@
 #include <ConnectToApp.h>
 #include <Helper.h>
 #include <INA219.h>
+#include <FaultLED.h>
 
 #include "esp_log.h"
-
-// #define ARDUHAL_LOG_LEVEL ESP_LOG_INFO
 
 #define I2C_CFG_SDA 7
 #define I2C_CFG_SCL 8
@@ -17,14 +16,6 @@
 #define LED_BLUE 5
 
 #define RETRY_CONNECTION_MAX 10
-
-#define m_SET_LED_RED digitalWrite(LED_RED, HIGH)
-#define m_SET_LED_GREEN digitalWrite(LED_GREEN, HIGH)
-#define m_SET_LED_BLUE digitalWrite(LED_BLUE, HIGH)
-
-#define m_RESET_LED_RED digitalWrite(LED_RED, LOW)
-#define m_RESET_LED_GREEN digitalWrite(LED_GREEN, LOW)
-#define m_RESET_LED_BLUE digitalWrite(LED_BLUE, LOW)
 
 WifiConnect* WifiConnect::WifiConnectPtr = NULL;
 WifiConnect &wifi_connect = *WifiConnect::getInstance();
@@ -41,32 +32,76 @@ enum e_State{
 
 e_State currentState = STATE_STARTUP;
 
-enum e_Fault{
+typedef enum e_Fault{
     FAULT_DEFAULT,
     FAULT_WIFI_NOT_CONNECTED,
     FAULT_HOST_NOT_REACHABLE,
     FAULT_COUNT
-};
+}t_Fault;
 
-e_Fault currentFault = FAULT_DEFAULT;
+t_Fault currentFault = FAULT_DEFAULT;
+
+FaultLED *x_faultLED;
+t_faultSource x_wifiFault = {.o_faultLED = LED_GREEN};
+t_faultSource x_appFault = {.o_faultLED = LED_RED};
+t_faultSource x_inaFault = {.o_faultLED = LED_BLUE};
+t_faultSource *ax_faultConfig[] = {&x_wifiFault, &x_appFault, &x_inaFault};
 
 void setup() 
 {
+    Serial.begin(115200);
+    Serial.printf("Hello %d\n", CONFIG_DISABLE_HAL_LOCKS);
+
     esp_log_level_set("wifi", ESP_LOG_ERROR);      // enable WARN logs from WiFi stack
     esp_log_level_set("dhcpc", ESP_LOG_ERROR);
 
-    pinMode(LED_RED, OUTPUT);
-    pinMode(LED_GREEN, OUTPUT);
-    pinMode(LED_BLUE, OUTPUT);
+    x_faultLED = new FaultLED(ax_faultConfig, 3);
 
     wifi_connect.set_app_ptr(&app_interface);
 
-    Serial.begin(115200);
     EEPROM.begin(100);
+
+    /**
+     * @brief Configure and calibration routine INAxxx sensor
+     */ 
+#ifndef INA219_DISABLE
+    sensor = new INA219(I2C_CFG_SDA, 
+                        I2C_CFG_SCL, 
+                        I2C_CFG_CLOCK, 
+                        I2C_CFG_INA_ADDR);
+
+    x_inaFault.o_faultFlag = 1;
+    if(sensor->configure(   INA219::NO_RESET, 
+                            INA219::BRNG_32V, 
+                            INA219::PGA_8, 
+                            INA219::BADC_8AVG, 
+                            INA219::SADC_8AVG, 
+                            INA219::CNT_SHUNT_BUS) != 0)
+    {
+        while(true)
+        {
+            delay(1000);
+        }
+    }
+    delay(1000);
+    x_inaFault.o_faultFlag = 3;
+    if(sensor->calibrate(0.02, 0.2, 10) != 0)
+    {
+        while(true)
+        {
+            delay(1000);
+        }
+    }
+    delay(1000);
+    x_inaFault.o_faultFlag = 0;
+    // sensor->start();
+#endif
 
     currentState = STATE_STARTUP;
 
-#ifndef INA219_ONLY_BUILD 
+    /**
+     * @brief Connect to a WiFi STA
+     */ 
     IPAddress host_address;
 #ifdef HOST_IP
     host_address.fromString(HOST_IP);
@@ -91,17 +126,16 @@ void setup()
     device_cfg.readMemoryById(DeviceCfg::WIFISSID, (int8_t*)ssid, 32);
     device_cfg.readMemoryById(DeviceCfg::WIFIPASS, (int8_t*)pass, 32); 
 #endif
-    
     log_i("Attempt to connect to %s with pass %s", ssid, pass);
-    wifi_connect.set_STA_parameter(ssid, pass);  
+    wifi_connect.set_STA_parameter(ssid, pass);
     wifi_connect.start_connection();
     
     uint8_t retry_count=0;
+    x_wifiFault.o_faultFlag = 1;
     while(WiFi.status() != WL_CONNECTED 
     && retry_count < RETRY_CONNECTION_MAX)
     {
         retry_count++;
-        m_SET_LED_GREEN;
         delay(1000);
         
     }
@@ -111,13 +145,17 @@ void setup()
         log_e("Failed to connect to %s", ssid);
         log_e("Disable STA mode. Please access the device AP to reconfigure STA information");
         currentFault = FAULT_WIFI_NOT_CONNECTED;
+        
         while(true)
         {
             delay(1000);
         }
     }
-    m_RESET_LED_GREEN;
+    x_wifiFault.o_faultFlag = 0;
 
+    /**
+     * @brief Connect to the saved host compute IP
+     */ 
     IPAddress localIP = WiFi.localIP();
     log_i("Local IP: %d.%d.%d.%d", localIP[0], localIP[1], localIP[2], localIP[3]);
     
@@ -129,11 +167,11 @@ void setup()
                                         hostIP[1], 
                                         hostIP[2], 
                                         hostIP[3]);
+    x_appFault.o_faultFlag = 1;
     while(host_alive == -1
     && retry_count < RETRY_CONNECTION_MAX)
     {
         retry_count++;
-        m_SET_LED_RED;
         host_alive = app_interface.setHost(hostIP, 80);
         delay(100);
     }
@@ -146,72 +184,48 @@ void setup()
                                         hostIP[3]);
         log_e("Please access %s:80 to reconfigure Host information", localIP.toString());
         currentFault = FAULT_HOST_NOT_REACHABLE;
+        
         while(true)
         {
             delay(1000);
         }
     }
-    m_RESET_LED_RED;
-#endif
+    x_appFault.o_faultFlag = 0;
 
-#ifndef INA219_DISABLE
-    sensor = new INA219(I2C_CFG_SDA, 
-                        I2C_CFG_SCL, 
-                        I2C_CFG_CLOCK, 
-                        I2C_CFG_INA_ADDR);
-
-    sensor->configure(INA219::NO_RESET, 
-                    INA219::BRNG_32V, 
-                    INA219::PGA_1, 
-                    INA219::BADC_8AVG, 
-                    INA219::SADC_8AVG, 
-                    INA219::CNT_SHUNT_BUS);
-    sensor->calibrate(0.01, 0.02, 2);
-#endif
 }
 
 void loop() {
-    currentState = STATE_NORMAL;
-
-#ifndef INA219_DISABLE
-    sensor->read_voltage();
-    sensor->read_current();
-    log_v("-------------------");
-    log_v("Bus voltage:   %08.6f", sensor->voltage);
-    log_v("Current:       %08.6f", sensor->current);
-#endif
-
 #ifndef INA219_ONLY_BUILD  
     int8_t wifi_status = WiFi.status();
     if(wifi_status == WL_CONNECTED)
     {
-        m_RESET_LED_GREEN;
+        x_wifiFault.o_faultFlag = 0;
 
-        int8_t host_alive = app_interface.checkHostAlive();
-
-        if(host_alive == 0)
-        {   
-            m_RESET_LED_RED;
-            
 #ifndef INA219_DISABLE
-            app_interface.setMeasurementPayload(sensor->current, sensor->voltage);
+        INA219::t_messageSensor x_sensorData;
+        sensor->read_current();
+        sensor->read_voltage();
+        x_sensorData.current = sensor->current;
+        x_sensorData.voltage = sensor->voltage;
+        app_interface.setMeasurementPayload(x_sensorData.current, x_sensorData.voltage);
 #else
-            app_interface.setMeasurementPayload((esp_random()%11000)/1000.0, (esp_random()%37000)/1000.0);
-#endif
-            int16_t HTTP_code = app_interface.POST_measPayload("/esp32_post");
-            log_e("Response code: %d", HTTP_code);
+        app_interface.setMeasurementPayload((esp_random()%11000)/1000.0, (esp_random()%37000)/1000.0);
+#endif 
+        int16_t UDP_code = app_interface.UDP_measPayload();
+        if(UDP_code != 1)
+        {
+            app_interface.checkHostAlive() == 0 ? x_appFault.o_faultFlag=0 : x_appFault.o_faultFlag=1;
         }
         else
         {
-            m_SET_LED_RED;
+            x_appFault.o_faultFlag=0;
         }
+     
     }
     else
     {
-        m_SET_LED_GREEN;
+        x_wifiFault.o_faultFlag=1 ;
     }
+    vTaskDelay(100);
 #endif
-
-
-    delay(200);
 }

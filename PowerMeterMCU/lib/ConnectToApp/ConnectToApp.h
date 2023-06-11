@@ -6,6 +6,7 @@
 #include <WiFiServer.h>
 #include <WiFiClient.h>
 #include <HTTPClient.h>
+#include <WiFiUdp.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -41,7 +42,7 @@ class WifiConnect
 
         // Create Singleton class
         static WifiConnect* WifiConnectPtr;
-        WifiConnect();
+        WifiConnect() {}
 
         /**
          * @brief Connect to STA
@@ -58,17 +59,7 @@ class WifiConnect
          */
         void send_homepage();
 
-        TaskHandle_t *status_check;
-        TaskHandle_t *user_input;
-
-        typedef struct StatusMessage
-        {	
-            wl_status_t status;
-            uint8_t localIP[4];
-        } StatusMessage;
-
-        StatusMessage *status_msg;
-        QueueHandle_t *status_queue;
+        TaskHandle_t *px_userInput;
 
         WiFiServer server;
         WiFiClient client;
@@ -100,27 +91,6 @@ class WifiConnect
          * @return -1 if Error
          */
         int8_t start_connection();
-
-        /**
-         * @brief Async task checking the connection status of the device
-         */
-        static void check_status_task(void *param);
-
-        /**
-         * @brief Get connection status of the device
-         * 
-         * @return -1: Error | 0-6: Connect status according to wl_status_t
-         */
-        int8_t get_status();
-
-        /**
-         * @brief Get local IP of the device
-         * @param buffer
-         * @param buffer_size
-         * 
-         * @return -1 if `buffer_size` < 4 
-         */
-        int8_t get_local_IP(uint8_t *buffer, uint8_t buffer_size);
 
         // 
         // Handle user's input from self-host server.
@@ -183,6 +153,8 @@ class AppInterface
 
         int16_t POST_measPayload(String route);
 
+        int16_t UDP_measPayload();
+
         /**
          * @brief
          */
@@ -194,7 +166,7 @@ class AppInterface
          */
         int8_t checkHostAlive();
 
-    private:
+    // private:
         typedef struct MeasurementPayload_t{
             char buf[34] = "current=00.00000&voltage=00.00000";
             float current;
@@ -213,3 +185,5 @@ class AppInterface
 
     friend WifiConnect;
 };
+
+extern WiFiUDP udp_;

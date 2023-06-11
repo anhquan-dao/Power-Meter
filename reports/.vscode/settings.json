@@ -155,5 +155,15 @@
             "args": ["./build/main.pdf", "./"]
         }
     ],
-    "latex-workshop.latex.autoBuild.run": "onSave"
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "python.autoComplete.extraPaths": [
+        "/home/quan/interprocess_ws/devel/lib/python2.7/dist-packages",
+        "/home/quan/ros_test_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/quan/interprocess_ws/devel/lib/python2.7/dist-packages",
+        "/home/quan/ros_test_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ]
 }
