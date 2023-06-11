@@ -1,6 +1,8 @@
 #include <ConnectToApp.h>
 #include <index.h>
 
+WiFiUDP udp_;
+
 void STAInfo::setSSID(const char *ssid)
 {
     memset(STA_ssid, 0, 100);
@@ -46,26 +48,12 @@ uint8_t STAInfo::getPass(char *buffer, uint8_t buffer_size)
 //======================================================
 //            WifiConnect definition
 //========================================================
-
-WifiConnect::WifiConnect()
-{
-
-    // Create necessary resource for async task status_check_task()
-    status_check = new TaskHandle_t;
-    status_msg = new StatusMessage;
-
-    status_queue = new QueueHandle_t;
-    *status_queue = xQueueCreate(4, sizeof(StatusMessage));
-}
-
 WifiConnect* WifiConnect::getInstance()
 {
     if (WifiConnectPtr == NULL)
     {
         WifiConnectPtr = new WifiConnect();
-        return WifiConnectPtr;
     }
-
     return WifiConnectPtr;
 }
 
@@ -137,8 +125,10 @@ int8_t WifiConnect::start_connection()
         return configure_ret;
     }
 
+    px_userInput = new TaskHandle_t;
+
     xTaskCreatePinnedToCore(check_user_input_task, "check_user_input_task", 4000, 
-                                    NULL, 0, user_input, 1);
+                                    NULL, 1, px_userInput, 1);
 
     return 0;
 }
@@ -302,32 +292,6 @@ void WifiConnect::check_user_input_task(void *param)
     }
 }
 
-int8_t WifiConnect::get_status()
-{
-    if(xQueuePeek(*status_queue, (void*)status_msg, 0) != pdTRUE)
-    {
-        return -1;
-    }
-
-    return status_msg->status;
-}
-
-int8_t WifiConnect::get_local_IP(uint8_t *buffer, uint8_t buffer_size)
-{
-    if(buffer_size < 4)
-    {
-        return -1;
-    }
-
-    if(xQueuePeek(*status_queue, (void*)status_msg, 0) != pdTRUE)
-    {
-        return -1;
-    }
-
-    memcpy(buffer, status_msg->localIP, 4);
-    return 0;
-}
-
 void WifiConnect::set_app_ptr(AppInterface *app_)
 {
     app = app_;
@@ -389,6 +353,14 @@ int16_t AppInterface::POST_measPayload(String route)
     return POST(route, meas_payload.buf);
 }
 
+int16_t AppInterface::UDP_measPayload()
+{
+    udp_.beginPacket(hostAddress.toString().c_str(), 4444);
+    log_e("%s", meas_payload.buf);
+    udp_.write((uint8_t*)meas_payload.buf, 34);
+    return udp_.endPacket();
+}
+
 int8_t AppInterface::checkHostAlive()
 {
     host_alive = (Ping.ping(hostAddress, 1) - 1);
@@ -400,7 +372,7 @@ int8_t AppInterface::setMeasurementPayload(float current_, float voltage_)
     meas_payload.current = current_;
     meas_payload.voltage = voltage_;
 
-    sprintf(meas_payload.buf, "current=%08.6f&voltage=%08.6f", current_, voltage_);
+    sprintf(meas_payload.buf, "current=%09.6f&voltage=%09.6f", current_, voltage_);
 
     return 0;
 }
