@@ -1,0 +1,51 @@
+{% extends '/base_layout/base.html' %}
+
+{% block content%}
+<!--row 1: Tags title-->
+<!-- <div class="row shadow-lg" >
+<div class="col-5">
+    <div class="row">
+    <div class="col fs-3 bg-primary bg-gradient fw-bold text-center text-white border border-success rounded-end">
+        Real-time data of sensor
+    </div>
+    </div>
+</div>
+</div> -->
+
+<div class="row" >
+    <div class="col-1">
+        <label class="check_button" id="play">
+        <button type="button" class="btn btn-primary" checked data-checked=false data-toggle="button" aria-pressed="false">
+            <i class="fa fa-pause" aria-hidden="true"></i>
+        </button>
+        </label>
+    </div>
+</div>
+
+
+<div id="power_chart"></div>
+
+<script>
+    $('.check_button').click(function(){
+        var check_box = $(this).find( "button" );
+        var checked = $( check_box ).data( "checked" );
+        var active = $( check_box ).active;
+        
+        if (checked) {
+            $( check_box ).data( "checked", false );
+            checked = false;
+            pause_graph = 0;
+            active = 1;
+        } else {
+            $( check_box ).data( "checked", true );
+            checked = true;
+            pause_graph = 1;
+            active = 0;
+        }
+
+        // console.log($(this).attr("id"));
+		// console.log(checked);
+    });
+</script>
+    
+{% endblock %}

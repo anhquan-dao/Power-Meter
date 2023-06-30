@@ -236,17 +236,38 @@
 
     \pagebreak
     \subsection{MOSFET basic switching circuit} 
-    \justify
-    An example driver circuit for P-channel MOSFET is shown in Figure \ref{fig:ideal_gate_drive}. In this circuit, the gate is charged with an ideal power supply. The Zener diode $D1$ connected across the Source-Gate of $M1$ clamps the voltage at the diode zener breakdown voltage lower than the specified maximum $V_{gs_max}$.
+    
+    An example driver circuit for P-channel MOSFET is shown in Figure \ref{fig:ideal_gate_drive}. In this circuit, the gate is charged with an ideal power supply. The Zener diode $D1$ connected across the Source-Gate of $M1$ clamps the voltage at the diode zener breakdown voltage lower than the specified maximum $V_{gs_max}$. In Figure \ref{fig:single_transistor_gate_drive}, a transistor is used to allows the small voltage control from device such as MCU, op-amp, etc.
 
     \begin{figure}[!h]
-        \centerline{\includegraphics[width=\linewidth, height=0.5\linewidth]{media/ideal_gate_drive.png}}
-        \caption{Transient analysis of turning on a P-channel MOSFET}
+        \centerline{\includegraphics[width=\linewidth]{media/ideal_gate_drive.png}}
+        \caption{Ideal gate driver circuit.}
         \label{fig:ideal_gate_drive}
     \end{figure}
 
+    \begin{figure}[!h]
+        \centerline{\includegraphics[width=\linewidth]{media/pmos_switch_npn.png}}
+        \caption{Single-transistor gate driver circuit.} 
+        \label{fig:single_transistor_gate_drive}
+    \end{figure}
+
     \justify
-    The diode $D3$ allows for different current to be used for gate discharge and charge. To use with small-current device such as MCU, op-amp, etc., a transistor In the example, the larger current is used to charge the gate which leads to quick turn-off and slow turn-on which is desirable for application with capacitive load to reduce in-rush current. This effect cannot be replicated with a single transistor
+    From the two example circuit, the following remarks can be made:
+    \begin{enumerate}
+        \item In the ideal example, the diode $D3$ allows for different current to be used for gate discharge and charge. A larger current (through both $R_2$ and $R_{gate}$) is used to charge the gate which makes the turn-off event faster than turn-on (slow turn-on). This effect is desirable for application with capacitive load to reduce in-rush current.
+        \item For $Q_1$ to be in saturation region, the following equation must be satisfied:
+        \begin{equation} 
+        \begin{split}
+            I_{B1} &> \dfrac{I_{C1}}{\beta}\\
+\Longleftrightarrow \dfrac{5V - I_{E1} \cdot R_1}{R_{B1}} &> \dfrac{I_{C1}}{\beta}\\
+\Longleftrightarrow 5V &> \dfrac{V_{in}}{R_{pullup} + R_1}\cdot(R_1 + \dfrac{R_{B1}}{\beta}), \quad I_{C1}\approx I_{E1} \\
+\Longleftrightarrow \dfrac{5V}{V_{in}} &> \dfrac{R_1 + \dfrac{R_{B1}}{\beta}}{R_{pullup} + R_1} \\
+\Longleftrightarrow \dfrac{5V}{V_{in}} \geq \dfrac{1}{6} &> \dfrac{R_1 + \dfrac{R_{B1}}{\beta}}{R_{pullup} + R_1}, \quad \textbf{max}V_{in} = 30V \\
+\Longleftrightarrow R_{pullup} &> 5R_1 + \dfrac{6R_{B1}}{\beta}
+        \end{split}
+        \end{equation}
+        \item To replicate the slow turn-on effect in the single-transistor gate driver, $I_{pullup}$ (while $Q_1$ is cut-off) needs to be larger than $I_{E1}$ (while $Q_1$ is in ohmic.
+    \end{enumerate}
 
     \pagebreak
     \subsection{Push-pull topology}

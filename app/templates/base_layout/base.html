@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>
+            industial AQI Monitoring App (iAQI)
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- JQuery-->
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">        
+        <!-- Plotly  -->
+        <script src="https://cdn.plot.ly/plotly-2.20.0.min.js" charset="utf-8"></script>
+        <!-- Add icon library -->   
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    </head>
+
+    <body>
+        <div class="container-fluid">
+            {%block header_1%}
+                {% include '/base_layout/header.html' %}
+            {%endblock%}
+
+            <div class="row" >
+                <div class="col-md-4 fs-2 bg-primary bg-gradient fw-bold text-center text-white border border-success border-right-0">
+                    Real-time data of sensor
+                </div>
+                <div class="col-md-4 bg-primary bg-gradient fw-bold text-left text-white border border-success border-left-0">
+                    <div class="row">
+                        <div class="col-xs-4 ">
+                            Current: <span id="current">0</span>
+                        </div>
+                        <div class="col-xs-4">
+                            Voltage: <span id="voltage">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {%block content%}
+                <h1>MY CONTENT</h1>
+            {%endblock%}
+        </div>
+
+        <script type="text/javascript">
+
+            var result_ = [[new Date(), 0, 0]];
+            var pause_graph = 0;
+
+            var data_chart = [{
+                y: [],
+                x: [],
+                mode: 'lines',
+                name: 'Voltage Trace',
+                line: {
+                    color: 'rgb(159, 166, 178)',
+                    width: 3
+                },
+                xaxis: {
+                    type: 'date',
+                    tickformat: '%H:%M:%S'
+                }
+            },{
+                y: [],
+                x: [],
+                mode: 'lines',
+                name: 'Current Trace',
+                line: {
+                    color: 'rgb(59, 113, 202)',
+                    width: 3
+                },
+                xaxis: {
+                    type: 'date',
+                    tickformat: '%H:%M:%S'
+                }
+            }];
+
+            const getDataChart0 = sessionStorage.getItem("data_chart0");
+            const getDataChart1 = sessionStorage.getItem("data_chart1");
+            if(getDataChart0 != null && getDataChart1 != null)
+            {
+                data_chart[0] = JSON.parse(getDataChart0);
+                data_chart[1] = JSON.parse(getDataChart1);
+                document.getElementById("current").innerHTML = data_chart[1].y.at(-1);
+                document.getElementById("voltage").innerHTML = data_chart[0].y.at(-1);
+            }
+            
+
+            if(document.getElementById('power_chart') != null){
+                Plotly.newPlot('power_chart', data_chart);
+            }
+
+            var cnt = 0;
+            var max_data_pts = 200;
+            var expected_data_rate = 10;
+
+            function submitForm(e)
+            {   
+                e.preventDefault()
+                
+                var formID = e.target.id;
+                var form = document.getElementById(formID);
+                var data = new FormData(form);
+    
+                $.ajax({
+                    type: form.method,
+                    url: form.action,
+                    data: $('#' + formID +'').serialize(),
+                });
+            }
+
+            function sec2dt(v) {
+                var d = new Date(0);
+                d.setUTCSeconds(
+                    Math.floor(v),
+                    Math.floor(v*1000.0)%1000
+                );
+
+                return d.toISOString();
+            }
+
+            function updateGraph() {               
+                time_data       = result_.map(d => sec2dt(d[0]));
+                current_data    = result_.map(d => d[1]);
+                voltage_data    = result_.map(d => d[2]);
+
+                /**
+                 * Trim the data container based on time
+                 */
+                var iso_date = new Date(time_data.at(-1));
+                var expected_dt_ms = (max_data_pts/expected_data_rate) * 1000;
+                for(let i=0; i<data_chart[0].x.length; i++)
+                {
+                    var last_date = new Date(data_chart[0].x.at(0));
+                    var dt_ms = Math.abs(iso_date-last_date);
+                    if(dt_ms <= expected_dt_ms)
+                    {
+                        console.log("Trim " + i +" data points");
+                        break;
+                    }
+                    data_chart[0].y.splice(0, 1);
+                    data_chart[0].x.splice(0, 1);
+                    data_chart[1].y.splice(0, 1);
+                    data_chart[1].x.splice(0, 1);
+                }
+                
+                /**
+                 * Trim the data container based on size
+                 */
+                if(data_chart[0].x.length > max_data_pts) 
+                {
+                    var truncate_len = data_chart[0].x.length - max_data_pts;
+                    console.log(truncate_len);
+                    data_chart[0].y.splice(0, truncate_len);
+                    data_chart[0].x.splice(0, truncate_len);
+
+                    data_chart[1].y.splice(0, truncate_len);
+                    data_chart[1].x.splice(0, truncate_len);
+                }
+                
+                /**
+                 *  Pause the graph while still update the data container
+                 */
+                if(document.getElementById('power_chart') != null
+                && pause_graph == 0) {
+                    Plotly.extendTraces('power_chart',{
+                        y:[current_data, voltage_data],
+                        x:[time_data, time_data],
+                    }, [0, 1]);
+                }
+                else {
+                    data_chart[0].y.push(...current_data);
+                    data_chart[0].x.push(...time_data);
+                    data_chart[1].y.push(...voltage_data);
+                    data_chart[1].x.push(...time_data);
+                }
+
+                sessionStorage.setItem("data_chart0", JSON.stringify(data_chart[0]));
+                sessionStorage.setItem("data_chart1", JSON.stringify(data_chart[1]));
+
+            }
+
+            function requestData()
+            {
+                // Ajax call to get the Data from Server
+                var requests = $.get('/esp32_post');
+
+                var tm = requests.done(function (result)
+                {
+                    if(result.length == 0)
+                    {
+                        return;
+                    }
+                    result_ = result;
+                    updateGraph();
+                    document.getElementById("current").innerHTML = result_.at(-1)[1];
+                    document.getElementById("voltage").innerHTML = result_.at(-1)[2];
+                });
+            }
+
+            setInterval(function(){requestData()}, 1000);
+    
+        </script>
+    </body>
+
+</html>

@@ -3,12 +3,12 @@ V1 Vin 0 PULSE(0 12 0 1u 1u 500m)
 R_load out 0 4.7
 D1 gate Vin EDZV18B
 C1 out 0 100µF
-V§5V N001 0 PULSE(5 0 200m 1u 1u 5m)
+V§5V N001 0 PULSE(5 0 200m 1u 1u 100m)
 Q1 gate N002 N003 0 2N2222
-R_pullup gate Vin 1k
-R_gate2 N002 N001 1k
+R_pullup gate Vin 10k
+R_b N002 N001 500
 XU2 out gate Vin IRF4905
-R_pullup1 0 N003 1k
+R_1 N003 0 6k8
 .model D D
 .lib C:\users\quan\My Documents\LTspiceXVII\lib\cmp\standard.dio
 .model NPN NPN
