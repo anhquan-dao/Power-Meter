@@ -12,8 +12,8 @@
         <h1 class="text-success text-center">Sensor configuration</h1>
         <form class="form-horizontal" method="POST" id="config" onSubmit="submitForm(event); validateForm(event, validateConfiguration)">
             <div class="form-group">
-                <label for="shunt_resistor" class="form-label">Shunt resistor</label>
-                <input type="text" class="form-control" placeholder="Enter shunt resistor value (Ω)" id="shunt_resistor" name="shunt_resistor" required>
+                <label for="shunt_resistor" class="form-label">Max measured power</label>
+                <input type="text" class="form-control" placeholder="Enter max power (W)" id="max_power" name="max_power" required>
             </div>
             <div class="form-group">
                 <label for="max_current">Max measured current</label>
@@ -21,7 +21,7 @@
             </div>
             <div class="form-group">
                 <label for="max_voltage">Max measured voltage</label>
-                <input type="text" class="form-control" placeholder="Enter max voltage 6 - 36V" id="max_voltage" name="max_voltage">   
+                <input type="text" class="form-control" placeholder="Enter max voltage 10 - 30V" id="max_voltage" name="max_voltage">   
             </div>
 
             <p id="validation_status"></p>

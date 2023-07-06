@@ -18,7 +18,7 @@ class UDPServer():
         '''
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        self.server_config = ('0.0.0.0', port_)
+        self.server_config = ('', port_)
         self.socket.bind(self.server_config)
 
         self.db = database_
@@ -28,6 +28,8 @@ class UDPServer():
         self.shutdown = False
 
         self.thread_handle = self.rx_timer()
+
+        self.sensor_address = 0
 
     def close(self):
         self.shutdown = True
@@ -66,10 +68,10 @@ class UDPServer():
     @threaded
     def rx_timer(self):
         while not self.shutdown:
-            data = self.socket.recvfrom(1024)
+            data, self.sensor_address = self.socket.recvfrom(1024)
             if data:
                 #print received data
-                data_string = data[0].decode("utf-8")
+                data_string = data.decode("utf-8")
                 # print('Client to Server: ' , data_string)
                 parse_dict = self.parser(data_string)
 

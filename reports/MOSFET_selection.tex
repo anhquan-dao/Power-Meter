@@ -1,24 +1,28 @@
-%!TeX root = note
+%!TeX root = MOSFET_selection
 \documentclass[main.tex]{subfiles}
 
 \begin{document}
     \section{MOSFET selection}
     \justify
-    In this section, the switching operation of a MOSFET is discussed
+    In this section, the criteria of selecting a suitable MOSFET are discussed.
     \begin{enumerate}
-        \item MOSFET switching principle.
-        \item Type of load switch.
-        \item On resistance $R_{ds}$.
-        \item Gate charge.
-        \item Safe Operating Area.
-        \item IRF4905S.
+        \item \nameref{sec:switch_type}.
+        \item \nameref{sec:on_resistance}.
+        \item \nameref{sec:gate_charge}.
+        \item \nameref{sec:soa}.
+        \item \nameref{sec:irf4905}.
     \end{enumerate}
 
     \pagebreak
-    \subsection{MOSFET switching principle}
+    \subsection{MOSFET switching principle} \label{sec:switch_type}
 
     \justify
-    For the N-channel MOSFET to be  "switched on" (in triode or saturation region), $V_{gs} > V_{th}$ with Gate-Source threshold voltage $V_{th} > 0$. To achieve this, a simple circuit such as in Figure \ref{fig:simple_nmos_switch} can be used. This configuration is called low-side switch where  the switch (MOSFET) is connected to the negative terminal of the supply voltage. For the P-channel MOSFET, $V_{gs} < V_{th}$ with $V_{th} < 0$ which leads to the simple circuit shown in Figure \ref{fig:simple_pmos_switch}. This configuration is called high-side switch where  the switch is connected to the positive terminal of the supply voltage.
+    The N-channel and P-channel MOSFET have different turn-on conditions:
+    \begin{itemize}
+        \item For the N-channel MOSFET to be  "switched on" (in triode or saturation region), $V_{gs} > V_{th}$ with Gate-Source threshold voltage $V_{th} > 0$. To achieve this, a simple circuit such as in Figure \ref{fig:simple_nmos_switch} can be used. This configuration is called \textbf{Low-side Switch} where  the switch (MOSFET) is connected to the negative terminal of the supply voltage.
+        \item For the P-channel MOSFET, the turn-on condition is $V_{gs} < V_{th}$ with $V_{th} < 0$ which leads to the simple circuit shown in Figure \ref{fig:simple_pmos_switch}. This configuration is called \textbf{High-side Switch} where the switch is connected to the positive terminal of the supply voltage.
+    \end{itemize}
+     
 
     \begin{figure}[!h]
         \centering
@@ -40,11 +44,11 @@
     In load switching application, high-side switching is more preferable due to having no ground offset (ground loop). In a circuit exhibiting ground loop, the load is not connected directly to the ground of the power supply which can lead to distortion in signal transmission. The offset voltage is calculated by $\Delta V_\text{GND} = -I_d \cdot R_{ds}$ showing that $\Delta V_\text{GND}$ varied, and, thus, not desirable in electronics system.    
 
     \pagebreak
-    \subsection{On resistance $R_{ds}$}
+    \subsection{On resistance $R_{ds}$} \label{sec:on_resistance}
     N-channel MOSFET exhibits lower $R_{ds}$ than that of P-channel MOSFET due to packing density. It is possible to parallel two or more P-channel MOSFETs to reduce the total on resistance $R_{\sum ds}$. However, the designer has to take into account devices' parameters mismatch. An application note from Infineon and Texas Instruments \cite{InfineonParallelMOS} details the effects and solutions of each mismatches, suitable for paralleling up to 4 MOSFETs. However, \cite{MOSFET_parallel_low_power} shows that for low power application, the parameter mismatches is not as detrimental as for high power application.
     
     \pagebreak
-    \subsection{Gate Charge}
+    \subsection{Gate Charge} \label{sec:gate_charge}
 
     \justify
     For a MOSFET to be switched-on, the parasitic capacitors $C_{gs}$ and $C_{gd}$ modeled in Figure \ref{fig:MOSFET_parasitic_cap} has to be charged/discharged. This phenomenon is synonymous to both P-channel and N-channel MOSFET. Thus, in this section, the gate charge curve of P-channel MOSFET is discussed.
@@ -126,7 +130,7 @@
     For quick prototyping, the total gate charge $Q_g$ in the MOSFET's datasheet can be used. In the case of IRF4905S, $Q_g$ is $180nC$. For a charge/discharge time of, e.g.,  $t_{sw} = 100ns$, the gate current to switch the MOSFET can be approximated as $I_g = Q_g / t_{sw} = 1.8A$.
 
     \pagebreak
-    \subsection{Safe Operating Area (SOA)}
+    \subsection{Safe Operating Area (SOA)} \label{sec:soa}
     In a MOSFET's datasheet, the SOA of the device shows the limitation of the device's opreating range. As long as the desired application is well within the SOA, the device will, in all likelihood, not risk running into problems such as thermal runaway, material degradation, etc. A typical SOA plot of a P-channel MOSFET is shown in figure \ref{fig:typical_SOA_plot}. The SOA lies below the dashed boundary.
 
     \begin{figure}[!h]
@@ -171,7 +175,7 @@
     \end{enumerate}
 
     \pagebreak
-    \subsection{IRF4905S}
+    \subsection{IRF4905S} \label{sec:irf4905}
 
     \justify
     As a load switch, the following parameters are basic to the selection process:
@@ -221,100 +225,5 @@
         \caption{IRF4905 P-channel MOSFET key parameter \cite{IRF4905S}.}
         \label{fig:IRF4905S_param}
     \end{figure}    
-
-    \subsection{Undervoltage Protection}
-    
-    \section{Isolation Protection}
-
-    \section{Reverse Polarity Protection}
-
-    \pagebreak
-
-    \section{5V Rail}
-
-    \subsection{Principle}
-    \justify
-    To supply power to the protection logic circuit and the MCU, a 5V rail is needed. The following are methods of creating such constant voltage rail from the main power supply:
-
-    \begin{table}[!h]
-        \centering
-        \begin{tabular}{|m{0.1\linewidth}|m{0.45\linewidth}|m{0.45\linewidth}|}
-        
-        \hline
-        & Linear voltage regulator & Switching voltage regulator \\
-        \hline
-        Principle & 
-
-        \includegraphics[width=0.45\textwidth]{media/series_regulator.png}
-        The above figure illustrates a simple circuit of a linear voltage regulator. In this circuit, assuming a constant load, the voltage drop across $R_2$ is kept constant by biasing the transistor $Q$ with zener diode $DZ$. &
-
-        \includegraphics[width=0.45\textwidth]{media/inverting_switch_regulator.png}
-        The above figure illustrates a simple switching voltage regulator. In this circuit, the close-open switching of the transistor stores and releases energy of the inductor which in turn charges the capacitor maintaining a constant voltage drop $V_{out}$ across the load. \\
-
-        \hline
-        Advantages & 
-
-        \begin{itemize}
-            \item Often comes as fixed output regulator which is suitable for digital logic ICs, and microcontrollers.
-            \item Requires very few external components. In the case of fixed-output, only decouply capacitors at input and ouput are needed.
-        \end{itemize} &
-        
-        \begin{itemize}
-            \item Low power loss due to on(saturation)/off switching of the transistor leading to less conduction loss, allowing for higher current application.
-            \item Can perform buck ($V_{out} < V_{in}$) and boost ($V_{out} > V_{in}$).
-        \end{itemize} \\
-
-        \hline
-        Disadvantages & 
-
-        \begin{itemize}
-            \item High power loss. The transistor $Q$ is in its ohmic region due to the biasing of Base-Emitter region, thus, $I_{c} \approx I_{e}$. The power loss is approximated: \newline $P_{loss} = P_{in} - P_{out} = (V_{in} - V_{load}) \cdot I_{e}$.
-            \item Can only perform voltage step-down ($V_{out} < V_{in}$).
-        \end{itemize} &
-        
-        \begin{itemize}
-            \item High component count.
-            \item Switching noise due to continuous charge and discharge of inductor.
-            \item Lower load regulation capability in comparison to linear voltage regulation. Load regulation are heavily dependent on the LC subcircuit. 
-        \end{itemize}  \\
-
-        \hline     
-        \end{tabular}
-        \caption{Comparison of linear and switching voltage regulator}
-        \label{table:voltage_regulator_type}
-    \end{table}
-
-    \justify
-    In summary, linear voltage regulator is suitable for low power application with limited input voltage range; while switching voltage regulator is suitable for medium power consumption with limited load regulation. In this project, the MCU consumes up to $0.5A$ during wireless transmission, and the undervoltage/overvoltage logic circuit consumes negligible current.
-
-    \begin{itemize}
-        \item Linear voltage regulator: Power loss is up to $P_{loss} = (V_{in,max} - 5V) \cdot 0.5A = (30V - 5V) \cdot 0.5A = 12.5W$ which is a efficiency of $\eta = \dfrac{2.5W}{15W} = 16.67\%$
-        \item Switching voltage regulator: Switching noise and voltage ripple can negatively affect MCU's data transmission.
-    \end{itemize}
-    
-    \justify
-    To offset the disadvantages of the two type of voltage regulator, a hybrid where a switching voltage regulator first regulate the input voltage to $V_{out,sw}=10V$, and a linear voltage regulator regulate $V_{out,sw}$ down to $5V$ (the desired voltage). In this setup, the power loss of the linear regulator is $P_{loss} = (V_{out,sw} - 5V) \cdot 0.5A = (10V - 5V) \cdot 0.5A = 2.5W$; switching noise and ripple is reduced by the linear regulator. $V_{out,sw}$ can be further reduced, as long as the switching regulator allows, to reduce the power loss even further.
-
-    \justify
-    Because of the invering voltage of the switching regulator, the 5V rail created is -5V in reference to the supply voltage's ground. This is also applied to $V_{out,sw}$. The undervoltage/overvoltage logic circuit will be adjusted accordingly to compensate for the negative offset.
-
-    \subsection{MC34063AD and L7805xx}
-
-    \justify
-    MC34063AD from Onsemi \cite{MC34063AD} is chosen for the construction of the switching regulator due to its few external component requirement. The IC has a built-in BJT load switch that can withstand 1.5A and shunt current sensing for overcurrent/short protection.
-
-    \begin{figure}[!h]
-        \centerline{\includegraphics[scale=0.5]{media/MC34063AD_specs.png}}
-        \caption{MC34063AD specifications.}
-        \label{fig:MC34063AD_specs}
-    \end{figure}
-
-    \justify
-    L7805xx series from STMicroelectronics \cite{L78} is chosen for the LDO.
-
-
-
-
-    \stopsubchapters
     
 \end{document}

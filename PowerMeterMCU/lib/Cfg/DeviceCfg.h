@@ -26,8 +26,7 @@ class DeviceCfg
             data_enum id_enum;
             uint16_t addr;
             uint16_t size;
-            int8_t (DeviceCfg::*plausibility_func)(memory_id_t*, int8_t*, uint16_t);
-            char     id[50];     
+            int8_t (DeviceCfg::*plausibility_func)(memory_id_t*, int8_t*, uint16_t);    
         };
         
         void readMemoryById(data_enum data_id, int8_t *buffer, uint16_t buffer_size);
@@ -46,9 +45,9 @@ class DeviceCfg
 
         struct memory_id_t memory_id[DATA_COUNT]
         {
-            {WIFISSID, 0, 32, &DeviceCfg::defaultPlausibility, "WifiSSID"},
-            {WIFIPASS, 32, 32, &DeviceCfg::defaultPlausibility, "WifiPASS"},
-            {HOSTIP, 64, 15, &DeviceCfg::checkHostIP, "HostIP"},
+            {WIFISSID, 0, 32, &DeviceCfg::defaultPlausibility},
+            {WIFIPASS, 32, 32, &DeviceCfg::defaultPlausibility},
+            {HOSTIP, 64, 15, &DeviceCfg::checkHostIP},
         };
 
         char wifi_ssid[32];

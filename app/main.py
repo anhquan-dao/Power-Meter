@@ -4,6 +4,8 @@ import json
 
 from flask_socketio import SocketIO
 
+import requests
+
 from threading import Thread
 import socket
 from datetime import datetime
@@ -35,20 +37,23 @@ class SensorConfiguration():
 
     def __init__(self, request_):
 
-        self.params = {'shunt_resistor': 1, \
-                       'max_current'   : 1, \
-                       'max_voltage'   : 12}
+        self.params = { 'max_current'   : 1, \
+                        'max_voltage'   : 12, \
+                        'max_power'     : 100}
+
         if(type(request_) == type(request)):
             for key in self.params.keys():
                 self.params[key] = float(request_.form.get(key, self.params[key]))
-        
-        self.shunt_resistor = self.params['shunt_resistor']
-        self.max_current    = self.params['max_current']
-        self.max_voltage    = self.params['max_voltage']
 
     def __str__(self):
         return str(self.params)
 
+    def toHTTPData(self):
+        HTTPData = str()
+        for key in self.params.keys():
+            HTTPData += "&{}={}".format(key, self.params[key])
+        
+        return HTTPData[1:]
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -59,11 +64,29 @@ def index():
         
         return render_template("index.html")
 
+def send_sensor_config(url, data):
+    headers = { 'User-Agent':   'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
+                'Content-Length':   str(len(data))}
+    
+    response = requests.Response()
+    try:
+        response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.ConnectionError:
+        pass    
+
+    print(url)
+
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method == 'POST':  
         sensor_config = SensorConfiguration(request)
-        print(sensor_config)
+
+        url = 'http://' + udp_server.sensor_address[0] + ':80/sensor_config'
+        data = sensor_config.toHTTPData()
+        print(url)
+        t = Thread(target=send_sensor_config, args=(url, data))
+        t.setDaemon(True)
+        t.start()
         
         return ''
 

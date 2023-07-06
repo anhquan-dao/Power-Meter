@@ -51,6 +51,7 @@
 \usepackage{gensymb}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{nameref}
 
 % UML diagram
 \usepackage{plantuml}
@@ -65,6 +66,36 @@
     pdfpagemode=FullScreen,
     }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Subchapter setup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+%\usepackage{hyperref}% http://ctan.org/pkg/hyperref
+\newcounter{subchapter}\renewcommand{\thesubchapter}{\alph{subchapter}}
+\makeatletter
+% \patchcmd{<cmd>}{<search>}{<replace>}{<success>}{<failure>}
+\newcommand{\updatechaptercounter}{}
+\patchcmd{\@chapter}{\@afterheading}{\updatechaptercounter\@afterheading}{}{}% Regular patch of \@chapter
+%\patchcmd{\Hy@org@chapter}{\@afterheading}{\updatechaptercounter\@afterheading}{}{}% Hyperref patch of \@chapter
+\makeatother
+\providecommand{\theHchapter}{}%
+\newcommand{\startsubchapters}{%
+  \setcounter{subchapter}{0}% Reset sub-chapter numbering
+  \renewcommand{\thechapter}{\arabic{chapter}\thesubchapter}% Update chapter number display
+  \renewcommand{\theHchapter}{\arabic{chapter}\thesubchapter}% Update chapter number display (for hyperref)
+  \renewcommand{\updatechaptercounter}{\addtocounter{chapter}{-1}}% Update chapter number
+  \let\oldchapter\chapter%
+  \renewcommand{\chapter}{\stepcounter{subchapter}\oldchapter}% Increment subchapter
+}
+\newcommand{\stopsubchapters}{%
+  \renewcommand{\thechapter}{\arabic{chapter}}% Reset chapter numbering
+  \renewcommand{\theHchapter}{\arabic{chapter}}% Reset chapter numbering (for hyperref)
+  \let\chapter\oldchapter% Restore regular \chapter command
+  \renewcommand{\updatechaptercounter}{}% Clear chapter counter update
+  \stepcounter{chapter}% Update chapter counter
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \addbibresource{datasheet_ref.bib}
 \addbibresource{temp_ref.bib}
 
@@ -76,7 +107,11 @@
 
 \maketitle
 
-\subfile{note.tex}
+\chapter{Design}
+\subfile{MOSFET_selection.tex}
+\pagebreak
+\subfile{MOSFET_driver.tex}
+\pagebreak
 
 \printbibliography
 

@@ -35,10 +35,9 @@ class STAInfo
         uint8_t getPass(char *buffer, uint8_t buffer_size);
 
 };
-
 class WifiConnect
 {
-    private:
+    public:
 
         // Create Singleton class
         static WifiConnect* WifiConnectPtr;
@@ -59,17 +58,10 @@ class WifiConnect
          */
         void send_homepage();
 
-        TaskHandle_t *px_userInput;
-
         WiFiServer server;
         WiFiClient client;
 
         AppInterface *app;
-
-        const char host_name[10] = "PowerNode";
-        
-
-    public:
         
         WifiConnect(const WifiConnect& obj) = delete;
 
@@ -91,15 +83,6 @@ class WifiConnect
          * @return -1 if Error
          */
         int8_t start_connection();
-
-        // 
-        // Handle user's input from self-host server.
-        //
-
-        /**
-         * @brief Async task checking user input on the device's self server
-         */
-        static void check_user_input_task(void *param);
 
         /**
          * @brief 
@@ -135,23 +118,6 @@ class AppInterface
     public:
         AppInterface();
         ~AppInterface(){}
-        
-        /**
-         * @brief Set IP address of the host
-         * @param hostIP
-         * @return -1 if error
-         */
-        int8_t setHost(uint8_t *hostIP_=NULL, uint16_t port_=8090);
-
-        /**
-         * @brief POST data to the host
-         * @return -1 if error
-         */
-        int16_t POST(String route, char *data);
-
-        int16_t POST(String route, String data);
-
-        int16_t POST_measPayload(String route);
 
         int16_t UDP_measPayload();
 
@@ -159,14 +125,6 @@ class AppInterface
          * @brief
          */
         int8_t setMeasurementPayload(float current_, float voltage_);
-        
-        /**
-         * @brief Check if host is alive
-         * @return -1 if Error
-         */
-        int8_t checkHostAlive();
-
-    // private:
         typedef struct MeasurementPayload_t{
             char buf[34] = "current=00.00000&voltage=00.00000";
             float current;
@@ -175,15 +133,15 @@ class AppInterface
 
         MeasurementPayload_t meas_payload;
 
-        IPAddress hostAddress;
-        uint16_t port = 8090;
-        int8_t host_alive;
-
         HTTPClient *http;
         int16_t httpResponseCode;
         String POST_uri;
 
+        volatile bool   update_max = false;
+        volatile float  max_measurement[3];
+        volatile float  &max_current = max_measurement[0];
+        volatile float  &max_voltage = max_measurement[1];
+        volatile float  &max_power   = max_measurement[2];
+
     friend WifiConnect;
 };
-
-extern WiFiUDP udp_;

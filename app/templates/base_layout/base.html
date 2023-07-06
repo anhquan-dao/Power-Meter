@@ -41,6 +41,13 @@
                 </div>
             </div>
 
+            <div class="col-1">
+                <form class="form-horizontal" method="POST" id="stop" onSubmit="submitForm(event)">
+                    <button type="submit" class="btn btn-primary">Stop</button>
+                </form>
+            </div>
+            
+
             {%block content%}
                 <h1>MY CONTENT</h1>
             {%endblock%}
@@ -168,14 +175,14 @@
                 if(document.getElementById('power_chart') != null
                 && pause_graph == 0) {
                     Plotly.extendTraces('power_chart',{
-                        y:[current_data, voltage_data],
+                        y:[voltage_data, current_data],
                         x:[time_data, time_data],
                     }, [0, 1]);
                 }
                 else {
-                    data_chart[0].y.push(...current_data);
+                    data_chart[0].y.push(...voltage__data);
                     data_chart[0].x.push(...time_data);
-                    data_chart[1].y.push(...voltage_data);
+                    data_chart[1].y.push(...current_data);
                     data_chart[1].x.push(...time_data);
                 }
 
@@ -197,13 +204,14 @@
                     }
                     result_ = result;
                     updateGraph();
-                    document.getElementById("current").innerHTML = result_.at(-1)[1];
-                    document.getElementById("voltage").innerHTML = result_.at(-1)[2];
+                    document.getElementById("current").innerHTML = result.at(-1)[1];
+                    document.getElementById("voltage").innerHTML = result.at(-1)[2];
                 });
             }
 
             setInterval(function(){requestData()}, 1000);
-    
+            
+            
         </script>
     </body>
 
