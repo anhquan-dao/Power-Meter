@@ -1,21 +1,22 @@
 %!TeX root = MOSFET_selection
-\documentclass[main.tex]{subfiles}
+\documentclass[../main.tex]{subfiles}
 
 \begin{document}
     \section{MOSFET selection}
     \justify
-    In this section, the criteria of selecting a suitable MOSFET are discussed.
+    Metal-oxide-semiconductor field-effect transistor or MOSFET is a voltage-controlled silicon switch, and is commonly used for its high impedance and high switching frequency. MOSFET is usually found in power application such as switched-mode power supply, motor controller, etc. In this project, the MOSFET is the suitable choice over its relative Bipolar Junction Transitor (BJT) for connecting/disconnecting a $100W$ load from a supply voltage ranging from $10V$ to $30V$. In this section, the criteria of selecting a suitable MOSFET are discussed.
     \begin{enumerate}
-        \item \nameref{sec:switch_type}.
-        \item \nameref{sec:on_resistance}.
-        \item \nameref{sec:gate_charge}.
-        \item \nameref{sec:soa}.
-        \item \nameref{sec:irf4905}.
+        \item \nameref{ssec:switch_type}.
+        \item \nameref{ssec:on_resistance}.
+        \item \nameref{ssec:gate_charge}.
+        \item \nameref{ssec:soa}.
+        \item \nameref{ssec:irf4905}.
+        \item \nameref{ssec:reverse_voltage_protection}.
     \end{enumerate}
 
     \pagebreak
-    \subsection{MOSFET switching principle} \label{sec:switch_type}
-
+    \subsection{MOSFET switching principle} \label{ssec:switch_type}    
+    
     \justify
     The N-channel and P-channel MOSFET have different turn-on conditions:
     \begin{itemize}
@@ -23,7 +24,6 @@
         \item For the P-channel MOSFET, the turn-on condition is $V_{gs} < V_{th}$ with $V_{th} < 0$ which leads to the simple circuit shown in Figure \ref{fig:simple_pmos_switch}. This configuration is called \textbf{High-side Switch} where the switch is connected to the positive terminal of the supply voltage.
     \end{itemize}
      
-
     \begin{figure}[!h]
         \centering
         \begin{minipage}{.4\textwidth}
@@ -44,11 +44,11 @@
     In load switching application, high-side switching is more preferable due to having no ground offset (ground loop). In a circuit exhibiting ground loop, the load is not connected directly to the ground of the power supply which can lead to distortion in signal transmission. The offset voltage is calculated by $\Delta V_\text{GND} = -I_d \cdot R_{ds}$ showing that $\Delta V_\text{GND}$ varied, and, thus, not desirable in electronics system.    
 
     \pagebreak
-    \subsection{On resistance $R_{ds}$} \label{sec:on_resistance}
-    N-channel MOSFET exhibits lower $R_{ds}$ than that of P-channel MOSFET due to packing density. It is possible to parallel two or more P-channel MOSFETs to reduce the total on resistance $R_{\sum ds}$. However, the designer has to take into account devices' parameters mismatch. An application note from Infineon and Texas Instruments \cite{InfineonParallelMOS} details the effects and solutions of each mismatches, suitable for paralleling up to 4 MOSFETs. However, \cite{MOSFET_parallel_low_power} shows that for low power application, the parameter mismatches is not as detrimental as for high power application.
+    \subsection{On resistance $R_{ds}$} \label{ssec:on_resistance}
+    N-channel MOSFET exhibits lower $R_{ds}$ than that of P-channel MOSFET due to packing density. It is possible to parallel two or more P-channel MOSFETs to reduce the total on resistance $R_{\sum ds}$. However, the designer has to take into account devices' parameters mismatch. Application notes from Infineon and Texas Instruments Inc. \cite{InfineonParallelMOS} \cite{TIParallelMOS} detail the effects and solutions of each mismatches, suitable for paralleling up to 4 MOSFETs. However, \cite{MOSFET_parallel_low_power} shows that for low power application, the parameter mismatches is not as detrimental as for high power application.
     
     \pagebreak
-    \subsection{Gate Charge} \label{sec:gate_charge}
+    \subsection{Gate Charge} \label{ssec:gate_charge}
 
     \justify
     For a MOSFET to be switched-on, the parasitic capacitors $C_{gs}$ and $C_{gd}$ modeled in Figure \ref{fig:MOSFET_parasitic_cap} has to be charged/discharged. This phenomenon is synonymous to both P-channel and N-channel MOSFET. Thus, in this section, the gate charge curve of P-channel MOSFET is discussed.
@@ -130,7 +130,7 @@
     For quick prototyping, the total gate charge $Q_g$ in the MOSFET's datasheet can be used. In the case of IRF4905S, $Q_g$ is $180nC$. For a charge/discharge time of, e.g.,  $t_{sw} = 100ns$, the gate current to switch the MOSFET can be approximated as $I_g = Q_g / t_{sw} = 1.8A$.
 
     \pagebreak
-    \subsection{Safe Operating Area (SOA)} \label{sec:soa}
+    \subsection{Safe Operating Area (SOA)} \label{ssec:soa}
     In a MOSFET's datasheet, the SOA of the device shows the limitation of the device's opreating range. As long as the desired application is well within the SOA, the device will, in all likelihood, not risk running into problems such as thermal runaway, material degradation, etc. A typical SOA plot of a P-channel MOSFET is shown in figure \ref{fig:typical_SOA_plot}. The SOA lies below the dashed boundary.
 
     \begin{figure}[!h]
@@ -175,7 +175,7 @@
     \end{enumerate}
 
     \pagebreak
-    \subsection{IRF4905S} \label{sec:irf4905}
+    \subsection{IRF4905S} \label{ssec:irf4905}
 
     \justify
     As a load switch, the following parameters are basic to the selection process:
@@ -197,7 +197,7 @@
         \hline
         \textbf{Switch type} & $V_{th} < 0V \Rightarrow$ High-side switch & 
         \begin{itemize}
-            \item $V_{th} > 0V \Rightarrow $ Low-side switch leads to ground offset (ground loop) varied based on $R_{ds}$ and $I_{d}$ of MOSFET. Require a gate driver IC with integrated/discrete charge pump circuit to use as high-side switch.
+            \item $V_{th} > 0V \Rightarrow $ Low-side switch leads to ground offset (ground loop). Require a gate driver IC with integrated/discrete charge pump circuit to use as high-side switch similar to \cite{InfineonNMOSHighDrive}.
         \end{itemize}
         \\
         \hline
@@ -224,6 +224,19 @@
         \centerline{\includegraphics[scale=0.5]{media/IRF4905_key_parameters.png}}
         \caption{IRF4905 P-channel MOSFET key parameter \cite{IRF4905S}.}
         \label{fig:IRF4905S_param}
-    \end{figure}    
+    \end{figure}   
     
+    \pagebreak
+    \subsection{Reverse Polarity Protection} \label{ssec:reverse_voltage_protection}
+    \justify
+    A MOSFET has an intrinsic body diode. It is the result of tying the body and the source of the device together in most 3-pin package. The body diode is created from the N-Type Substrate and P-Type Drain. Thus, by connecting the MOSFET's drain to the positive terminal of the supply voltage, the source to the load, and gate to the negative terminal (See Figure \ref{fig:reverse_voltage_protection}), a current path is created. 
+    
+    \begin{figure}[!h]
+        \centerline{\includegraphics[scale=0.5]{media/reverse_voltage_protection.png}}
+        \caption{MOSFET-based reverse polarity protection.}
+        \label{fig:reverse_voltage_protection}
+    \end{figure} 
+
+    \justify
+    When a reverse polarity voltage is applied, $V_{gs} > 0V$, cutting off the MOSFET. Therefore, the circuit is protected from reverse voltage. The zener diodes are in place to protect the Gate-Source junction of the MOSFETs. The resistors are to limit the current consumption of the zener diode.
 \end{document}

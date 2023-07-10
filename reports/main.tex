@@ -1,8 +1,5 @@
 \documentclass[12pt,letterpaper]{report}
 
-\setcounter{secnumdepth}{3}
-\setcounter{tocdepth}{3}
-
 \usepackage[margin=0.25in]{geometry}
 \geometry{
   top=0.8in,            
@@ -12,12 +9,9 @@
   headheight=4ex,       
   headsep=6.5ex,         
 }
-\usepackage{pgfplots}
-\pgfplotsset{width=10cm,compat=1.9}
 
-% We will externalize the figures
-\usepgfplotslibrary{external}
-\tikzexternalize
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
 
 \usepackage[utf8]{inputenc}
 \usepackage[utf8]{vietnam}
@@ -66,52 +60,75 @@
     pdfpagemode=FullScreen,
     }
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Subchapter setup
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
-%\usepackage{hyperref}% http://ctan.org/pkg/hyperref
-\newcounter{subchapter}\renewcommand{\thesubchapter}{\alph{subchapter}}
-\makeatletter
-% \patchcmd{<cmd>}{<search>}{<replace>}{<success>}{<failure>}
-\newcommand{\updatechaptercounter}{}
-\patchcmd{\@chapter}{\@afterheading}{\updatechaptercounter\@afterheading}{}{}% Regular patch of \@chapter
-%\patchcmd{\Hy@org@chapter}{\@afterheading}{\updatechaptercounter\@afterheading}{}{}% Hyperref patch of \@chapter
-\makeatother
-\providecommand{\theHchapter}{}%
-\newcommand{\startsubchapters}{%
-  \setcounter{subchapter}{0}% Reset sub-chapter numbering
-  \renewcommand{\thechapter}{\arabic{chapter}\thesubchapter}% Update chapter number display
-  \renewcommand{\theHchapter}{\arabic{chapter}\thesubchapter}% Update chapter number display (for hyperref)
-  \renewcommand{\updatechaptercounter}{\addtocounter{chapter}{-1}}% Update chapter number
-  \let\oldchapter\chapter%
-  \renewcommand{\chapter}{\stepcounter{subchapter}\oldchapter}% Increment subchapter
-}
-\newcommand{\stopsubchapters}{%
-  \renewcommand{\thechapter}{\arabic{chapter}}% Reset chapter numbering
-  \renewcommand{\theHchapter}{\arabic{chapter}}% Reset chapter numbering (for hyperref)
-  \let\chapter\oldchapter% Restore regular \chapter command
-  \renewcommand{\updatechaptercounter}{}% Clear chapter counter update
-  \stepcounter{chapter}% Update chapter counter
-}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \addbibresource{datasheet_ref.bib}
 \addbibresource{temp_ref.bib}
 
 \title{PowerMeterOutline}
 \author{Quan Dao Nguyen Anh}
-\date{Apri 2023}
+\date{July 2023}
 
 \begin{document}
 
 \maketitle
 
-\chapter{Design}
-\subfile{MOSFET_selection.tex}
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter{Introduction} 
+
+\chapter{Circuit design}
+
+\begin{figure}[!h]
+  \centerline{\includegraphics[width=\linewidth]{media/circuit_diagram.drawio.png}}
+  \caption{Subcircuits connection: power and signal.}
+  \label{fig:Circuit flowchart}
+\end{figure}
+
+\justify
+In this chapter, the following aspects of designing this project's circuit are discussed:
+\begin{enumerate}
+  \item MOSFET selection.
+  \item MOSFET driver.
+  \item Power rail.
+  \item Latch and overvoltage detection subcircuit.
+  \item Sensor and MCU.
+\end{enumerate}
+
 \pagebreak
-\subfile{MOSFET_driver.tex}
+\subfile{circuit_design/MOSFET_selection.tex}
 \pagebreak
+\subfile{circuit_design/MOSFET_driver.tex}
+\pagebreak
+\subfile{circuit_design/power_rail.tex}
+\pagebreak
+\subfile{circuit_design/latch_circuit.tex}
+\pagebreak
+\subfile{circuit_design/sensor_mcu.tex}
+
+\chapter{PCB layout}
+\justify
+In this chapter, the following key design points of the PCB layout are discussed:
+\begin{itemize}
+  \item Thermal via for TO-263/D2PAK footprint.
+  \item Amass XT60PW connector.
+\end{itemize}
+\pagebreak
+\subfile{circuit_design/pcb_layout.tex}
+
+\chapter{Firmware}
+\justify
+In this chapter, FreeRTOS is first discussed as it is an important component in the firmware of the MCU. Then, the firmware flowchart is discussed. The firmware of the MCU is built by running asynchronous tasks utilizing FreeRTOS with limited shared resources to limit bottlenecking.
+\pagebreak
+\subfile{firmware/firmware.tex}
+
+\chapter{Application}
+\justify
+In this chapter, the application is discussed. The application is run on the user/client's PC/laptop. The application is built using Flask, a web application framework written in Python.
+\pagebreak
+\subfile{application/application.tex}
+
+\chapter{Result}
 
 \printbibliography
 
