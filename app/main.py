@@ -33,6 +33,17 @@ class Sensor(db.Model):
 
 udp_server = UDPServer(db, Sensor)
 
+
+def send_sensor_config(url, data):
+    headers = { 'User-Agent':   'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
+                'Content-Length':   str(len(data))}
+    
+    response = requests.Response()
+    try:
+        response = requests.post(url, data=data, headers=headers)
+    except requests.exceptions.ConnectionError:
+        pass
+
 class SensorConfiguration():
 
     def __init__(self, request_):
@@ -63,18 +74,6 @@ def index():
     else:
         
         return render_template("index.html")
-
-def send_sensor_config(url, data):
-    headers = { 'User-Agent':   'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0',
-                'Content-Length':   str(len(data))}
-    
-    response = requests.Response()
-    try:
-        response = requests.post(url, data=data, headers=headers)
-    except requests.exceptions.ConnectionError:
-        pass    
-
-    print(url)
 
 @app.route('/config', methods=['GET', 'POST'])
 def config():
@@ -123,6 +122,19 @@ def esp32_post():
 
         return response
 
+@app.route('/stop',  methods = ["POST"])
+def stop():
+    if request.method == "POST":
+        headers = { 'User-Agent':   'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0'}
+
+        url = 'http://' + udp_server.sensor_address[0] + ':80/output'
+        response = requests.Response()
+        try:
+            response = requests.post(url, headers=headers)
+        except requests.exceptions.ConnectionError:
+            pass
+
+        return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
 if __name__ == "__main__":
     db.create_all()
     socketio.run(app, host='0.0.0.0', port= 8090, debug=True, use_reloader=False)

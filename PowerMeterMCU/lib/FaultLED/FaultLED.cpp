@@ -22,16 +22,16 @@ void FaultLED::statusBlinkTask(void *param)
 
     for(;;px_faultLED->o_tickCnt++)
     {
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastWakeTime, xFrequency/2.0);
         uint8_t o_tickCnt_ = px_faultLED->o_tickCnt & 0x03;
         for(int i=0; i<px_faultLED->o_faultCnt; i++)
         {
-            if(px_faultLED->pax_faultConfig[i]->o_faultFlag > o_tickCnt_)
+            if(px_faultLED->pax_faultConfig[i]->o_faultFlag >= o_tickCnt_)
             {
                 digitalWrite(px_faultLED->pax_faultConfig[i]->o_faultLED, HIGH);
             }
         }
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastWakeTime, xFrequency/2.0);
         for(int i=0; i<px_faultLED->o_faultCnt; i++)
         {
             digitalWrite(px_faultLED->pax_faultConfig[i]->o_faultLED, LOW);

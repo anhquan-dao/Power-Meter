@@ -42,7 +42,7 @@
             </div>
 
             <div class="col-1">
-                <form class="form-horizontal" method="POST" id="stop" onSubmit="submitForm(event)">
+                <form class="form-horizontal" method="POST" id="stop" onSubmit="requestStop(event)">
                     <button type="submit" class="btn btn-primary">Stop</button>
                 </form>
             </div>
@@ -92,8 +92,6 @@
             {
                 data_chart[0] = JSON.parse(getDataChart0);
                 data_chart[1] = JSON.parse(getDataChart1);
-                document.getElementById("current").innerHTML = data_chart[1].y.at(-1);
-                document.getElementById("voltage").innerHTML = data_chart[0].y.at(-1);
             }
             
 
@@ -180,7 +178,7 @@
                     }, [0, 1]);
                 }
                 else {
-                    data_chart[0].y.push(...voltage__data);
+                    data_chart[0].y.push(...voltage_data);
                     data_chart[0].x.push(...time_data);
                     data_chart[1].y.push(...current_data);
                     data_chart[1].x.push(...time_data);
@@ -188,11 +186,13 @@
 
                 sessionStorage.setItem("data_chart0", JSON.stringify(data_chart[0]));
                 sessionStorage.setItem("data_chart1", JSON.stringify(data_chart[1]));
-
             }
 
             function requestData()
             {
+                document.getElementById("current").innerHTML = data_chart[1].y.at(-1);
+                document.getElementById("voltage").innerHTML = data_chart[0].y.at(-1);
+
                 // Ajax call to get the Data from Server
                 var requests = $.get('/esp32_post');
 
@@ -204,13 +204,19 @@
                     }
                     result_ = result;
                     updateGraph();
-                    document.getElementById("current").innerHTML = result.at(-1)[1];
-                    document.getElementById("voltage").innerHTML = result.at(-1)[2];
                 });
             }
 
+            function requestStop(e)
+            {   
+                e.preventDefault()
+                var requests = $.post('/stop');
+                var tm = requests.done(function (result)
+                {
+                    console.log()
+                });
+            }
             setInterval(function(){requestData()}, 1000);
-            
             
         </script>
     </body>

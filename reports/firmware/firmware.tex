@@ -12,10 +12,14 @@
     The following diagram is the main program's flowchart:
 
     \begin{figure}[!h]
-        \centerline{\includegraphics[scale=0.55]{media/main_program_flowchart.drawio.png}}
+        \centerline{\includegraphics[scale=0.56]{media/main_program_flowchart.drawio.png}}
         \caption{Main program's flowchart.}
         \label{fig:main_program_flowchart}
     \end{figure}
+
+    \justify
+    The following code snippet is the setup function in the MCU, executing the above flowchart.
+    \lstinputlisting[language=C++]{setup.cpp}
 
     \pagebreak
     \subsection{\textit{read\_sensor\_task}}
@@ -33,6 +37,11 @@
     \end{enumerate}
 
     \pagebreak
+    \justify
+    The following code snippet is the \textit{read\_sensor\_task} function in the MCU, executing the above flowchart.
+    \lstinputlisting[language=C++]{read_sensor_task.cpp}
+
+    \pagebreak
     \subsection{\textit{send\_data\_task}}
     The following diagram is the \textit{send\_data\_task}'s flowchart.
 
@@ -46,6 +55,11 @@
         \item WiFi connectivity is checked before sending the data to the application. If the WiFi connection is lost, blink LED signaling the error.
         \item The measured data is encoded into a JSON-like string. The format is: \newline \centerline{${data}_0={value}_0\&{data}_1={value}_1\&...\&{data}_n={value}_n$.}\newline Then, the encoded string is sent to 255.255.255.255 with UDP protocol. This will broadcast to every device in the local network including, of course, the user's device.
     \end{enumerate}
+
+    \pagebreak
+    \justify
+    The following code snippet is the \textit{send\_data\_task} function in the MCU, executing the above flowchart.
+    \lstinputlisting[language=C++]{send_data_task.cpp}
 
     \pagebreak
     \subsection{\textit{check\_user\_input\_task}}
@@ -65,6 +79,11 @@
         \item switch\_off: Outputs a positive pulse on GPIO6 turning the MOSFET switch off.
         \item reset: Reset the MCU.
     \end{itemize}
+
+    \pagebreak
+    \justify
+    The following code snippet is the \textit{check\_user\_input\_task} function in the MCU, executing the above flowchart.
+    \lstinputlisting[language=C++]{check_user_input_task.cpp}
 
 
     

@@ -5,20 +5,21 @@
 
 #include "esp_log.h"
 
-#define I2C_CFG_SDA 7
-#define I2C_CFG_SCL 8
-#define I2C_CFG_CLOCK 100000
-#define I2C_CFG_INA_ADDR 0x40
-
-#define LED_RED 3
-#define LED_GREEN 4
-#define LED_BLUE 5
-
-#define RETRY_CONNECTION_MAX 10
-
+/**
+ * \defgroup AsyncVar Resources for asynchronous tasks
+ * @{
+ */
+// Binary semaphore for fetching new max values from the app request.
 SemaphoreHandle_t x_maxMeasSemp = xSemaphoreCreateBinary();
+/** Struct holding max operating values (power, current, voltage) of the device. */
 t_sensorMaxConfig x_sensorMaxConfig = m_INIT_SENSOR_MAX_CONFIG;
+/** Queue for sending sensor data to the app */
 QueueHandle_t x_sensorDataQueue = xQueueCreate(4, sizeof(INA226::t_messageSensor));;
+/** Task handle for reading sensor task */
+TaskHandle_t x_readSensor;
+/** Task handle for reading app's requests */
+TaskHandle_t x_userInput;
+/**@}*/
 
 WifiConnect* WifiConnect::WifiConnectPtr = NULL;
 WifiConnect &wifi_connect = *WifiConnect::getInstance();
@@ -27,30 +28,20 @@ AppInterface app_interface;
 
 INA226 *sensor;
 
-enum e_State{
-    STATE_STARTUP,
-    STATE_NORMAL,
-    STATE_COUNT
-};
+/**
+ * \defgroup FaultLED Variables for displaying device's operation "stuck" and errors.
+ * @{
+ */
 
-e_State currentState = STATE_STARTUP;
-
-typedef enum e_Fault{
-    FAULT_DEFAULT,
-    FAULT_WIFI_NOT_CONNECTED,
-    FAULT_HOST_NOT_REACHABLE,
-    FAULT_COUNT
-}t_Fault;
-
-t_Fault currentFault = FAULT_DEFAULT;
-
-FaultLED *x_faultLED;
+/** Struct for holding WiFi fault code */
 t_faultSource x_wifiFault = {.o_faultLED = LED_GREEN};
+/** Struct for holding INA fault code */
 t_faultSource x_inaFault = {.o_faultLED = LED_BLUE};
-t_faultSource *ax_faultConfig[] = {&x_wifiFault, &x_inaFault};
 
-TaskHandle_t x_readSensor;
-TaskHandle_t x_userInput;
+t_faultSource *ax_faultConfig[] = {&x_wifiFault, &x_inaFault};
+/** Class for reading error code from each sources and blink the correct LED */
+FaultLED x_faultLED(ax_faultConfig, m_SIZE_OF(ax_faultConfig));
+/**@}*/
 
 void setup() 
 {
@@ -60,24 +51,18 @@ void setup()
     esp_log_level_set("wifi", ESP_LOG_ERROR);      // enable WARN logs from WiFi stack
     esp_log_level_set("dhcpc", ESP_LOG_ERROR);
 
-    x_faultLED = new FaultLED(ax_faultConfig, m_SIZE_OF(ax_faultConfig));
-
     wifi_connect.set_app_ptr(&app_interface);
 
     EEPROM.begin(100);
 
-    /**
-     * @brief Initialize sensor
-     */ 
+    /** Initialize sensor */ 
     sensor = new INA226(I2C_CFG_SDA, 
                         I2C_CFG_SCL, 
                         I2C_CFG_CLOCK, 
                         I2C_CFG_INA_ADDR);
     initSensor(sensor);
 
-    /**
-     * @brief Connect to a WiFi STA
-     */ 
+    /** Connect to a WiFi STA */ 
     initWifi(WifiConnect::getInstance());
 
 }
@@ -108,41 +93,49 @@ void loop() {
     }
 }
 
-void start_sensor_task(INA226 *px_sensor);
-void read_sensor_task(void *param);
-
 /**
- * @brief Configure and calibration routine INAxxx sensor
+ * @brief   Configuration and calibration routine INA226 sensor
+ * @param   Pointer to object of class INA226
  */ 
 void initSensor(INA226 *px_sensor)
 {
-      
-    x_inaFault.o_faultFlag = 1;
-    if(px_sensor->configure(   INA226::E_AVG_16, 
+    while(true)
+    {
+        x_inaFault.o_faultFlag = 1;
+        
+        if(px_sensor->configure(INA226::E_AVG_16, 
                                 INA226::E_VCT_1100us, 
                                 INA226::E_VCT_1100us,
                                 INA226::E_MODE_CNT_SHUNT_BUS) != 0)
-    {
-        while(true)
         {
             delay(1000);
+            continue;
         }
-    }
 
-    x_inaFault.o_faultFlag = 3;
-    if(px_sensor->calibrate(0.004, x_sensorMaxConfig.max_current) != 0
-    && px_sensor->setPowerLimit(x_sensorMaxConfig.max_power) != 0)
-    {
-        while(true)
+        x_inaFault.o_faultFlag = 3;
+        if(px_sensor->calibrate(0.004, x_sensorMaxConfig.max_current) != 0)
         {
             delay(1000);
+            continue;
         }
-    }
-    
-    x_inaFault.o_faultFlag = 0;
-    start_sensor_task(px_sensor);
+        if(px_sensor->setPowerLimit(x_sensorMaxConfig.max_power) != 0)
+        {
+            delay(1000);
+            continue;
+        }
+
+        /** Reset fault source's flag and start sensor reading task */
+        x_inaFault.o_faultFlag = 0;
+        start_sensor_task(px_sensor);
+
+        break;
+    }   
 }
 
+/**
+ * @brief   Start async task of reading sensor INA226 data
+ * @param   Pointer to object of class INA226
+ */ 
 void start_sensor_task(INA226 *px_sensor)
 {
     if(px_sensor->e_state < INA226::CALIBRATED)
@@ -161,6 +154,8 @@ void read_sensor_task(void *param)
     TickType_t xLastWakeTime = xTaskGetTickCount();
     TickType_t xFrequency = 20 / portTICK_PERIOD_MS;
 
+    uint8_t o_100msCounter = 0;
+
     INA226::t_messageSensor x_sensorData;
     t_sensorMaxConfig x_sensorMaxMeas = m_INIT_SENSOR_MAX_CONFIG;
 
@@ -168,14 +163,16 @@ void read_sensor_task(void *param)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
+        /** Recalibrate and set new power limit if an request is received */
         if(xSemaphoreTake(x_maxMeasSemp, 0) == pdTRUE)
         {
             x_sensorMaxMeas = x_sensorMaxConfig;
             sensor->calibrate(0.004, x_sensorMaxMeas.max_current);
             sensor->setPowerLimit(x_sensorMaxMeas.max_power);
-            log_e("%f", x_sensorMaxMeas.max_voltage);
+            x_inaFault.o_faultFlag = 0;
         }
 
+        /** Read sensor data and compare with the set max value */
         if(sensor->read_voltage() == -1
         || sensor->read_current() == -1)
         {
@@ -186,21 +183,23 @@ void read_sensor_task(void *param)
         x_sensorData.voltage = sensor->voltage;
         x_sensorData.current = sensor->current;
 
-        
         if(sensor->voltage > x_sensorMaxMeas.max_voltage
         || sensor->current > x_sensorMaxMeas.max_current)
         {
-            log_e("MAX!");
             m_SEND_STOP_SIGNAL;
             x_inaFault.o_faultFlag = 4;
         }
 
+        /** Data is sent every 100ms  */
+        if(o_100msCounter < 5)
+        {
+            o_100msCounter++;
+            continue;
+        }
+        o_100msCounter = 0;
         xQueueSend(x_sensorDataQueue, (void*)&x_sensorData, 10 / portTICK_PERIOD_MS);
     }
 }
-
-void start_app_task(WifiConnect *px_app);
-void check_user_input_task(void *param);
 
 void initWifi(WifiConnect *px_wifiConnect)
 {
@@ -229,9 +228,7 @@ void initWifi(WifiConnect *px_wifiConnect)
     if(retry_count >= RETRY_CONNECTION_MAX)
     {
         WiFi.mode(WIFI_AP);
-        log_e("Failed to connect to %s", ssid);
-        log_e("Disable STA mode. Please access the device AP to reconfigure STA information");
-        
+        log_e("Failed to connect to %s. Recompile code and upload to device.", ssid);
         while(true)
         {
             delay(1000);
