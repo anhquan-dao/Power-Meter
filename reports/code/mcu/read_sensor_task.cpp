@@ -10,7 +10,6 @@ void read_sensor_task(void *param)
     t_sensorMaxConfig x_sensorMaxMeas = {   .max_current = 10.0,
                                             .max_voltage = 30.0,
                                             .max_power   = 100.0};
-
     for(;;)
     {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
@@ -23,20 +22,14 @@ void read_sensor_task(void *param)
             sensor->setPowerLimit(x_sensorMaxMeas.max_power);
             x_inaFault.o_faultFlag = 0;
         }
-
-        /** Check if the sensor board can still be read,
-         *  and set the error code for fault_led_task
-         */
+        /** Check if the sensor board can still be read */
         if(sensor->read_voltage() == -1
         || sensor->read_current() == -1)
         {
             continue;
             x_inaFault.o_faultFlag = 2;
         }
-        
-        /** Compare the read values with set maximum value,
-         *  and outputs a positive pulse accordingly
-         */
+        /** Compare the read values with set maximum value */
         x_sensorData.voltage = sensor->voltage;
         x_sensorData.current = sensor->current;
 
@@ -46,7 +39,6 @@ void read_sensor_task(void *param)
             m_SEND_SWITCH_OFF_SIGNAL;
             x_inaFault.o_faultFlag = 4;
         }
-
         /** Data is sent every 100ms to the queue */
         if(o_100msCounter < 5)
         {

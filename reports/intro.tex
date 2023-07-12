@@ -4,14 +4,41 @@
 \begin{document}
     \section{Motivation}
     \justify
-    fdafdddd
+    Power monitor is critical in all fields related to electronics and electrical such as robotics, embedded system, information technology, etc. Electronic/Electrical devices require a specified operating voltage and current range to operate well, and not get damaged. Furthermore, the power consumption of a device can give insight into its performance and longevity. For example, in battery-operated system, the battery's capacity, which can be simply estimated by a voltage-capacity lookup table, should not be completely depleted to reserve its full capacity \cite{SATPATHY2021267}. Understanding the need for power monitoring, this thesis discusses the design and construction of an intermediate device connecting a power supply and a load, providing protection from overvoltage, overcurrent, over-power with configurable thresholds, and remote control and visualization.
 
+    \pagebreak
     \section{Aims \& Objectives}
     \justify
-    fdafsdasa
+    In this thesis, a power monitor device is designed and built whose criteria are as follows:
+    \begin{itemize}
+        \item Mininum operating voltage: \textbf{$10V$}.
+        \item Maximum ratings for a pure resistive load:
+        \begin{itemize}
+            \item Input voltage: \textbf{$36V$}.
+            \item Current: \textbf{$10A$}.
+            \item Power: \textbf{$100W$}.
+        \end{itemize}
+        \item Provide \textbf{overvoltage}, \textbf{overcurrent}, \textbf{over-power} protection with configurable threshold.
+        \item Connect the load to the supply voltage, and disconnect as per user's input.
+        \item Upload voltage, current, power measured at the output stage to the user's device.
+    \end{itemize}
 
+    \justify
+    An application running on the user's PC/laptop is needed to receive and visualize the upload data from the power monitor. The app will also provide a simple user interface to configure the protection thresholds, and send a signal to disconnect the load from the power supply.
+
+    \pagebreak
     \section{Outline of Thesis}
     \justify
-    dasdfdasf
+    The thesis consists of 7 chapters:
+
+    \begin{enumerate}[label=\textbf{Chapter \arabic*}, leftmargin=*]
+        \item Introduction: \newline Motivation, goals and objectives of the thesis.
+        \item Circuit design: \newline The design process of each component of the device's circuit, and how each component connects with each other is discussed.
+        \item PCB layout: \newline The key design points of the PCB layout are discussed.
+        \item Firmware: \newline The microcontroller unit (MCU)'s firmware is broken down into tasks which are discussed in details.
+        \item Application: \newline The application running on the client's side design pattern and operation are discussed.
+        \item Result: \newline Any issues of both the power monitor device and the application are discussed, along with any potential improvements.
+        \item Conclusion.
+    \end{enumerate}
 
 \end{document}

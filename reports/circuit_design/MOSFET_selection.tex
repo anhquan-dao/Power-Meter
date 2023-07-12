@@ -74,7 +74,7 @@
     \begin{enumerate}
         \item $t_0 \rightarrow t_1$: $V_{gs}$ drops to approximately $V_{th}$. At this voltage, the MOSFET enters its ohmic/linear region and starts to conduct $I_d$.
         \item $t_1 \rightarrow t_2$: $V_{gs}$ drops to $V_{gs,miller}$, \textbf{Miller plateau}. At this voltage, the MOSFET is still in its linear region. The charging time and the charge is defined by:
-        \begin{equation}
+        \begin{equation} \label{eq:gate_charge_til_miller}
             \Delta t_{0\rightarrow2}=R_{g}(C_{gs} +C_{gd})ln\left(\dfrac{V_{signal-source}}{V_{gs, miller}}\right)
         \end{equation}
         \begin{equation}

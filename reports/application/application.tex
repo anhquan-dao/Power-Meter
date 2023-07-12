@@ -6,7 +6,7 @@
     Flask is a web application framework written in Python. To be more precise, Flask is a microframework which means it is extensible and is not dependent on third-party library, or, in other word, plug and play. The 
 
     \pagebreak
-    \section{Application's flowchart} \label{sec:application_flowchart}
+    \section{Controller's flowchart} \label{sec:application_flowchart}
     The following diagram is the application's flowchart.
     \begin{figure}[!h]
         \centerline{\includegraphics[scale=0.5]{media/appliation_flowchart.drawio.png}}
@@ -22,4 +22,35 @@
         \item A GET request with requested resource "esp\_post" is sent every 1000ms from client to the host. The response includes all the data entries from the previous request time up until now. Thus, no data entries sent by the MCU will not be missed.
         \item Other POST requests are "redirected" to the MCU with similar route discussed in previous section.
     \end{itemize}
+
+    \pagebreak
+    \section{View's design} \label{sec:application_flowchart}
+    \subsection{Embedded JavaScript functions}
+    \justify
+    The frontend is built using Bootstrap v5.0 framework, Plotly graphing library, and Asynchronous JavaScript and XML (AJAX). The following code snippet shows the JaveScript functions embedded in the .html file.
+
+    \lstinputlisting[language=JavaScript]{code/app/index.js}
+
+    \justify
+    \begin{itemize}
+        \item The function \lstinline[language=JavaScript]{updateGraph} extends the traces with the values acquired from the server.
+        \item The function \lstinline[language=JavaScript]{requestData} is called periodically using \lstinline[language=JavaScript]{setInterval}. After a response is received, the graph is updated with function \lstinline[language=JavaScript]{updateGraph}.
+        \item The function \lstinline[language=JavaScript]{submitForm} can be used in \lstinline[language=HTML]{onSubmit} tag of a form element to prevent the page from reloading, and update elements in the background (asynchronously).
+    \end{itemize}
+    
+    \pagebreak
+    \subsection{Webpage}
+    \justify
+    The following figures are the visual design of the webpage of the index.html and config.html respectively. The form in the configuration page uses function \lstinline[language=JavaScript]{submitForm} for its \lstinline[language=HTML]{onSubmit} tag.
+    \begin{figure}[!h]
+        \centerline{\includegraphics[width=\linewidth]{media/index_html.png}}
+        \caption{Index page design}
+        \label{fig:index_html}
+    \end{figure}
+    \begin{figure}[!h]
+        \centerline{\includegraphics[width=\linewidth]{media/config_html.png}}
+        \caption{Configuration page design}
+        \label{fig:config_html}
+    \end{figure}
+
 \end{document}

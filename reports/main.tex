@@ -89,6 +89,14 @@
 
 \lstset{style=mystyle}
 
+\lstdefinelanguage{JavaScript}{
+  morekeywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break, setInterval, preventDefault, getElementById, ajax, serialize, get, done},
+  morecomment=[s]{/*}{*/},
+  morecomment=[l]//,
+  morestring=[b]",
+  morestring=[b]'
+}
+
 \addbibresource{datasheet_ref.bib}
 \addbibresource{temp_ref.bib}
 
@@ -109,6 +117,7 @@
 \pagenumbering{arabic}
 
 \chapter{Introduction}
+\pagebreak
 \subfile{intro.tex}
 
 \chapter{Circuit design}
@@ -142,6 +151,10 @@ In this chapter, the following aspects of designing this project's circuit are d
 
 \chapter{PCB layout}
 \justify
+\begin{figure}[!h]
+  \centerline{\includegraphics[width=\linewidth]{media/power_meter_pcb_v2_2.png}}
+  \caption{Top (left) and bottom layer of the PCB layout.}
+\end{figure}
 In this chapter, the following key design points of the PCB layout are discussed:
 \begin{itemize}
   \item Thermal via for TO-263/D2PAK footprint.
@@ -158,11 +171,32 @@ In this chapter, FreeRTOS is first discussed as it is an important component in 
 
 \chapter{Application}
 \justify
-In this chapter, the application is discussed. The application is run on the user/client's PC/laptop. The application is built using Flask, a web application framework written in Python.
+In this chapter, the application design is discussed. The application is built using the Model-View-Vontroller design pattern. 
+
+\begin{figure}[!h]
+  \centerline{\includegraphics[width=\linewidth]{media/mvc_modified.drawio.png}}
+  \caption{Model-View-Controller diagram.}
+  \label{fig:application_flowchart}
+\end{figure}
+
 \pagebreak
 \subfile{application/application.tex}
 
 \chapter{Result}
+After evaluating the design, the following observations are made:
+\begin{itemize}
+  \item The proposed gate driver design and the power rail fails to meet their desired behaviour. These problems are discussed in details in Section \ref{sec:result_gate_driver} and \ref{sec:result_power_rail}.
+  \item The latch subcircuit design does not account for attempt at closing the switch after occurence of a fault. Section \ref{sec:result_latch_circuit} discusses this issue and proposes a possible improvements.
+  \item The communication between the firmware and application, as well as data visualization are discussed in Section \ref{sec:result_fw_app}.
+\end{itemize}
+
+\pagebreak
+\subfile{result.tex}
+
+\chapter{Conclusion}
+\justify
+Despite the issues with the gate driver and the power rail, the goals set out by the thesis are still achieved. With the pure resistive test load, the power monitor is able to operate well within the maximum ratings. The application allows the user to disconnect the load from the power supply at a click of a mouse, configure the desired protection threshold, and monitor the operating voltage and current traces of the connected load. To be able to use with other load (capacitive and/or inductive), the large $dv/dt$ at switch turn-off needs to be addressed. To make the device more portable, an alternative isolated DC-DC converter to the B0505S-2WR2 must be investigated.
+
 
 \printbibliography
 

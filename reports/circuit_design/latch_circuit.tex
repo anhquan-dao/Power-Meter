@@ -2,6 +2,11 @@
 \documentclass[../main.tex]{subfiles}
 
 \begin{document}
+    \begin{figure}[!h]
+        \centerline{\includegraphics[width=\linewidth]{media/latch_circuit_schematic.png}}
+        \caption{Latch and overvoltage detection subcircuit schematic.}
+        \label{fig:latch_circuit_schematic}
+    \end{figure}
     \section{Latch and overvoltage detection subcircuit}
     The MOSFET driver's inputs are determined from different sources. These sources are positive digital voltage pulses and, thus, a latching subcircuit is needed to maintain a constant digital voltage for driving the MOSFET driver. In this section, the followings are discussed:
     \begin{enumerate}

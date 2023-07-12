@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title> Power Meter remote control app</title>
+        <!-- JQuery-->
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <!-- Bootstrap component -->
+        <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">        
+        <!-- Plotly  -->
+        <script src="https://cdn.plot.ly/plotly-2.20.0.min.js" charset="utf-8"></script>
+    </head>
+
+    <script type="text/javascript">
+        // Substitution action for form element
+        function submitForm(e) {   
+            // Prevent the default action of requesting/load new url
+            e.preventDefault()
+            
+            var formID = e.target.id;
+            var form = document.getElementById(formID);
+            var data = new FormData(form);
+
+            // Ajax call to submit the form to server
+            $.ajax({
+                type: form.method,
+                url: form.action,
+                data: $('#' + formID +'').serialize(),
+            });
+        }
+        function requestData() {
+            // Ajax call to get the Data from Server
+            var requests = $.get('/esp32_post');
+            
+            // Wait for response, and update the graph accordingly
+            var tm = requests.done(function (result) {
+                if(result.length != 0) updateGraph(result);
+            });
+        }
+        setInterval(function(){requestData()}, 1000);
+    </script>
+</html>
